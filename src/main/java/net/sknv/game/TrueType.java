@@ -1,7 +1,6 @@
 package net.sknv.game;
 
 import net.sknv.engine.graph.Mesh;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.stb.STBTTAlignedQuad;
 import org.lwjgl.stb.STBTTBakedChar;
 import org.lwjgl.stb.STBTTFontinfo;
@@ -49,17 +48,20 @@ public class TrueType {
     private int ww = 800;
     private int wh = 600;
 
-    private int   scale;
-    private int   lineOffset;
-    private float lineHeight;
+    private int   scale = 1;
+    private int   lineOffset = 0;
+    private float lineHeight = 0;
 
     private boolean kerningEnabled = true;
     private boolean lineBBEnabled = false;
+    private int texID;
+    private ByteBuffer bitmap;
 
     public TrueType(long window){
         try {//todo: hardcode
-            this.ttf = ioResourceToByteBuffer("fonts/Roboto-Regular.ttf", 168 * 1024);
-        } catch (IOException e) {
+            this.ttf = ioResourceToByteBuffer("src/main/resources/fonts/Roboto-Regular.ttf", 168 * 1024);
+        } catch (Exception e) {
+            System.out.println("failed to load font");
             throw new RuntimeException(e);
         }
 
@@ -168,31 +170,32 @@ public class TrueType {
     }
 
     //todo: ?
-    public STBTTBakedChar.Buffer init(int BITMAP_W, int BITMAP_H) {
-        int texID = glGenTextures();
-        STBTTBakedChar.Buffer cdata = STBTTBakedChar.malloc(96);
-
-        ByteBuffer bitmap = BufferUtils.createByteBuffer(BITMAP_W * BITMAP_H);
-        stbtt_BakeFontBitmap(ttf, getFontHeight() * getContentScaleY(), bitmap, BITMAP_W, BITMAP_H, 32, cdata);
-
-        glBindTexture(GL_TEXTURE_2D, texID);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, BITMAP_W, BITMAP_H, 0, GL_ALPHA, GL_UNSIGNED_BYTE, bitmap);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-        glClearColor(43f / 255f, 43f / 255f, 43f / 255f, 0f); // BG color
-        glClearColor(169f / 255f, 183f / 255f, 198f / 255f, 0f); // Text color
-
-
-        glEnable(GL_TEXTURE_2D);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-        return cdata;
-    }
+//    public STBTTBakedChar.Buffer init() {
+//        int BITMAP_W = round(168 * this.getContentScaleX());
+//        int BITMAP_H = round(168 * this.getContentScaleY());
+//
+//        texID = glGenTextures();
+//        STBTTBakedChar.Buffer cdata = STBTTBakedChar.malloc(96);
+//
+//        ByteBuffer bitmap = BufferUtils.createByteBuffer(BITMAP_W * BITMAP_H);
+//        stbtt_BakeFontBitmap(ttf, getFontHeight() * getContentScaleY(), bitmap, BITMAP_W, BITMAP_H, 32, cdata);
+//
+//        glBindTexture(GL_TEXTURE_2D, texID);
+//        glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, BITMAP_W, BITMAP_H, 0, GL_ALPHA, GL_UNSIGNED_BYTE, bitmap);
+//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//
+//        glClearColor(43f / 255f, 43f / 255f, 43f / 255f, 0f); // BG color
+//        glClearColor(169f / 255f, 183f / 255f, 198f / 255f, 0f); // Text color
+//
+//        glEnable(GL_TEXTURE_2D);
+//        glEnable(GL_BLEND);
+//        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//        return cdata;
+//    }
 
     public void renderText(STBTTBakedChar.Buffer cdata, int bitmap_w, int bitmap_h) {
-        float scale = stbtt_ScaleForPixelHeight(info, getFontHeight());
+        float scale = stbtt_ScaleForPixelHeight(info, getFontHeight()); //0.0062467465
 
         try (MemoryStack stack = stackPush()) {
             IntBuffer pCodePoint = stack.mallocInt(1);
@@ -246,25 +249,30 @@ public class TrueType {
 
 
                 //attempt
-                Mesh myMesh = new Mesh(new float[]{x0,y0,0,x1,y0,0,x1,y1,0,x0,y1,0}, new float[]{q.s0(),q.t0(),q.s1(),q.t0(),q.s1(),q.t1(),q.s0(),q.t1()},new float[0],new int[]{0,1,2,2,3,1}, GL_TRIANGLES);
+                Mesh myMesh = new Mesh(new float[]{x0,y0,0,x1,y0,0,x1,y1,0,x0,y1,0}, new float[]{q.s0(),q.t0(),q.s1(),q.t0(),q.s1(),q.t1(),q.s0(),q.t1()},new float[]{},new int[]{0,1,2,0,2,3}, GL_TRIANGLES);
 
-                glBindVertexArray(myMesh.getVaoId());
-                glDrawElements(GL_TRIANGLES,myMesh.getVertexCount(), GL_UNSIGNED_INT,0);
                 glBindVertexArray(0);
                 glBindTexture(GL_TEXTURE_2D, 0);
-                //
 
-//                glTexCoord2f(q.s0(), q.t0());
-//                glVertex2f(x0, y0);
-//
-//                glTexCoord2f(q.s1(), q.t0());
-//                glVertex2f(x1, y0);
-//
-//                glTexCoord2f(q.s1(), q.t1());
-//                glVertex2f(x1, y1);
-//
-//                glTexCoord2f(q.s0(), q.t1());
-//                glVertex2f(x0, y1);
+                glBindTexture(GL_TEXTURE_2D, texID);
+                glBindVertexArray(myMesh.getVaoId());
+
+                glDrawElements(GL_TRIANGLES, myMesh.getVertexCount(), GL_UNSIGNED_INT,0);
+
+                glBindVertexArray(0);
+                glBindTexture(GL_TEXTURE_2D, 0);
+
+    //                glTexCoord2f(q.s0(), q.t0());
+    //                glVertex2f(x0, y0);
+    //
+    //                glTexCoord2f(q.s1(), q.t0());
+    //                glVertex2f(x1, y0);
+    //
+    //                glTexCoord2f(q.s1(), q.t1());
+    //                glVertex2f(x1, y1);
+    //
+    //                glTexCoord2f(q.s0(), q.t1());
+    //                glVertex2f(x0, y1);
             }
             //glEnd();
             if (isLineBBEnabled()) {
@@ -351,5 +359,9 @@ public class TrueType {
         glMatrixMode(GL_MODELVIEW);
 
         setLineOffset(lineOffset);
+    }
+
+    public ByteBuffer getTtf(){
+        return ttf;
     }
 }

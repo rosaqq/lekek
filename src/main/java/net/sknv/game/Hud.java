@@ -82,4 +82,8 @@ public class Hud implements IHud {
         terminal.close();
         hudElements.remove(terminal.getTextItem());
     }
+
+    public void addElement(HudElement myElement) {
+        hudElements.add(myElement);
+    }
 }
