@@ -4,10 +4,7 @@ import net.sknv.engine.IGameLogic;
 import net.sknv.engine.MouseInput;
 import net.sknv.engine.Scene;
 import net.sknv.engine.Window;
-import net.sknv.engine.entities.AbstractGameItem;
-import net.sknv.engine.entities.Collider;
-import net.sknv.engine.entities.HudElement;
-import net.sknv.engine.entities.Phantom;
+import net.sknv.engine.entities.*;
 import net.sknv.engine.graph.*;
 import net.sknv.engine.physics.PhysicsEngine;
 import net.sknv.engine.physics.colliders.OBB;
@@ -19,7 +16,6 @@ import java.lang.Math;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.lang.Math.round;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
 import static org.lwjgl.opengl.GL11.glViewport;
@@ -66,15 +62,21 @@ public class UltimateKekGame implements IGameLogic {
     public void init(Window window, MouseInput mouseInput) throws Exception {
         //todo: spaghet
         font = new TrueType(window.getWindowHandle());
-        int BITMAP_W = round(168 * font.getContentScaleX());
-        int BITMAP_H = round(168 * font.getContentScaleY());
+
+        int BITMAP_W = font.getBitMapW();
+        int BITMAP_H = font.getBitMapH();
+        Texture texture = font.getBitMapTexture();
 
         float zPos = 0;
         Mesh myMesh = new Mesh(new float[]{0,0,zPos,0,BITMAP_H,zPos,BITMAP_W,BITMAP_H,zPos,BITMAP_W,0,zPos}, new float[]{0,0,0,1,1,1,1,0},new float[0],new int[]{0,1,2,0,2,3}, GL_TRIANGLES);
-        myMesh.setMaterial(new Material(new Texture(font)));
+        myMesh.setMaterial(new Material(texture));
         myMesh.getMaterial().setAmbientColor(new Vector4f(1, 1, 1, 1));
 
         HudElement myElement = new HudElement(myMesh);
+        //
+
+        TextItem myTextItem = new TextItem("text", font);
+        myTextItem.getMesh().getMaterial().setAmbientColor(new Vector4f(1, 1, 1, 1));
         //
 
         renderer.init();
@@ -93,6 +95,7 @@ public class UltimateKekGame implements IGameLogic {
         hud = new Hud("+");
         //todo:spaghetti
         hud.addElement(myElement);
+        hud.addElement(myTextItem);
 
         //Setup Camera
         camera.setPosition(0.65f, 1.15f, 4.34f);

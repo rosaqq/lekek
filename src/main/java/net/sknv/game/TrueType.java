@@ -1,6 +1,10 @@
 package net.sknv.game;
 
+import net.sknv.engine.Utils;
+import net.sknv.engine.graph.Material;
 import net.sknv.engine.graph.Mesh;
+import net.sknv.engine.graph.Texture;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.stb.STBTTAlignedQuad;
 import org.lwjgl.stb.STBTTBakedChar;
 import org.lwjgl.stb.STBTTFontinfo;
@@ -19,6 +23,8 @@ import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,7 +32,6 @@ import static java.lang.Math.*;
 import static org.lwjgl.BufferUtils.createByteBuffer;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL30.glBindVertexArray;
 import static org.lwjgl.stb.STBTruetype.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.memSlice;
@@ -54,8 +59,12 @@ public class TrueType {
 
     private boolean kerningEnabled = true;
     private boolean lineBBEnabled = false;
-    private int texID;
-    private ByteBuffer bitmap;
+
+    private int BITMAP_SIZE = 168;
+    private int BITMAP_W;
+    private int BITMAP_H;
+    private Texture bitmapTexture;
+    private final STBTTBakedChar.Buffer cdata = STBTTBakedChar.malloc(96);
 
     public TrueType(long window){
         try {//todo: hardcode
@@ -98,8 +107,20 @@ public class TrueType {
             contentScaleX = px.get(0);
             contentScaleY = py.get(0);
         }
+
+        //BakeBitMapTexure
+        BITMAP_W = round(BITMAP_SIZE * contentScaleX);
+        BITMAP_H = round(BITMAP_SIZE * contentScaleY);
+
+        ByteBuffer bitmap = BufferUtils.createByteBuffer(BITMAP_W * BITMAP_H);
+        stbtt_BakeFontBitmap(ttf, fontHeight * contentScaleY, bitmap, BITMAP_W, BITMAP_H, 32, cdata);
+
+        bitmapTexture = new Texture(bitmap, BITMAP_W, BITMAP_H);
     }
 
+    public STBTTFontinfo getInfo() {
+        return info;
+    }
     public int getScale() {
         return scale;
     }
@@ -169,8 +190,12 @@ public class TrueType {
         return newBuffer;
     }
 
-    public void renderText(STBTTBakedChar.Buffer cdata, int bitmap_w, int bitmap_h) {
+    public Mesh renderText(String text) {
         float scale = stbtt_ScaleForPixelHeight(info, getFontHeight());
+        List<Float> positions = new ArrayList<>();
+        List<Float> textureCoordinates = new ArrayList<>();
+        float[] normals = new float[0];
+        List<Integer> indices = new ArrayList<>();
 
         try (MemoryStack stack = stackPush()) {
             IntBuffer pCodePoint = stack.mallocInt(1);
@@ -187,7 +212,8 @@ public class TrueType {
 
             float lineY = 0.0f;
 
-            //glBegin(GL_QUADS);
+            int counter = 0;
+
             for (int i = 0, to = text.length(); i < to; ) {
                 i += getCP(text, to, i, pCodePoint);
 
@@ -195,7 +221,7 @@ public class TrueType {
                 if (cp == '\n') {
                     if (isLineBBEnabled()) {
                         glEnd();
-                        renderLineBB(lineStart, i - 1, y.get(0), scale);
+                        renderLineBB(text, lineStart, i - 1, y.get(0), scale);
                         glBegin(GL_QUADS);
                     }
 
@@ -209,7 +235,7 @@ public class TrueType {
                 }
 
                 float cpX = x.get(0);
-                stbtt_GetBakedQuad(cdata, bitmap_w, bitmap_h, cp - 32, x, y, q, true);
+                stbtt_GetBakedQuad(cdata, BITMAP_W, BITMAP_H, cp - 32, x, y, q, true);
                 x.put(0, scale(cpX, x.get(0), factorX));
                 if (isKerningEnabled() && i < to) {
                     getCP(text, to, i, pCodePoint);
@@ -222,20 +248,36 @@ public class TrueType {
                         y0 = scale(lineY, q.y0(), factorY),
                         y1 = scale(lineY, q.y1(), factorY);
 
+                positions.add(x0);
+                positions.add(y0);
+                positions.add(0f);
+                textureCoordinates.add(q.s0());
+                textureCoordinates.add(q.t0());
+                indices.add(counter*4);
 
-                //attempt
-                Mesh myMesh = new Mesh(new float[]{x0,y0,0,x1,y0,0,x1,y1,0,x0,y1,0}, new float[]{q.s0(),q.t0(),q.s1(),q.t0(),q.s1(),q.t1(),q.s0(),q.t1()},new float[]{},new int[]{0,1,2,0,2,3}, GL_TRIANGLES);
+                positions.add(x1);
+                positions.add(y0);
+                positions.add(0f);
+                textureCoordinates.add(q.s1());
+                textureCoordinates.add(q.t0());
+                indices.add(counter*4+1);
 
-                glBindVertexArray(0);
-                glBindTexture(GL_TEXTURE_2D, 0);
+                positions.add(x1);
+                positions.add(y1);
+                positions.add(0f);
+                textureCoordinates.add(q.s1());
+                textureCoordinates.add(q.t1());
+                indices.add(counter*4+2);
 
-                glBindTexture(GL_TEXTURE_2D, texID);
-                glBindVertexArray(myMesh.getVaoId());
+                positions.add(x0);
+                positions.add(y1);
+                positions.add(0f);
+                textureCoordinates.add(q.s0());
+                textureCoordinates.add(q.t1());
+                indices.add(counter*4+3);
 
-                glDrawElements(GL_TRIANGLES, myMesh.getVertexCount(), GL_UNSIGNED_INT,0);
-
-                glBindVertexArray(0);
-                glBindTexture(GL_TEXTURE_2D, 0);
+                indices.add(counter*4);
+                indices.add(counter*4+1);
 
     //                glTexCoord2f(q.s0(), q.t0());
     //                glVertex2f(x0, y0);
@@ -248,19 +290,27 @@ public class TrueType {
     //
     //                glTexCoord2f(q.s0(), q.t1());
     //                glVertex2f(x0, y1);
+                counter++;
             }
-            //glEnd();
             if (isLineBBEnabled()) {
-                renderLineBB(lineStart, text.length(), lineY, scale);
+                renderLineBB(text, lineStart, text.length(), lineY, scale);
             }
         }
+
+        float[] pos = Utils.listToArray(positions);
+        float[] tex = Utils.listToArray(textureCoordinates);
+        int[] idx = indices.stream().mapToInt(i -> i).toArray();
+
+        Mesh mesh = new Mesh(pos, tex, normals, idx);
+        mesh.setMaterial(new Material(bitmapTexture));
+        return mesh;
     }
 
     private float scale(float center, float offset, float factor) {
         return (offset - center) * factor + center;
     }
 
-    private void renderLineBB(int from, int to, float y, float scale) {
+    private void renderLineBB(String text, int from, int to, float y, float scale) {
         glDisable(GL_TEXTURE_2D);
         glPolygonMode(GL_FRONT, GL_LINE);
         glColor3f(1.0f, 1.0f, 0.0f);
@@ -319,6 +369,7 @@ public class TrueType {
         return 1;
     }
 
+    //todo: rework, old code
     protected void windowSizeChanged(long window, int width, int height){
         if (Platform.get() != Platform.MACOSX) {
             width /= contentScaleX;
@@ -336,7 +387,15 @@ public class TrueType {
         setLineOffset(lineOffset);
     }
 
-    public ByteBuffer getTtf(){
-        return ttf;
+    public int getBitMapW() {
+        return BITMAP_W;
+    }
+
+    public int getBitMapH() {
+        return BITMAP_H;
+    }
+
+    public Texture getBitMapTexture() {
+        return bitmapTexture;
     }
 }

@@ -4,6 +4,7 @@ import net.sknv.engine.Utils;
 import net.sknv.engine.graph.FontTexture;
 import net.sknv.engine.graph.Material;
 import net.sknv.engine.graph.Mesh;
+import net.sknv.game.TrueType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +16,7 @@ public class TextItem extends HudElement {
     private static final int VERTICES_PER_QUAD = 4;
 
     private final FontTexture fontTexture;
+    private TrueType font;
 
     private String text;
 
@@ -23,6 +25,25 @@ public class TextItem extends HudElement {
         this.text = text;
         this.fontTexture = fontTexture;
         setMesh(buildMesh());
+    }
+
+    public TextItem(String text, TrueType font){
+        super();
+        this.text = text;
+        //todo: deprecate fontTexture -> Texture
+        this.fontTexture = null;
+        this.font = font;
+
+        setMesh(font.renderText(text));
+    }
+
+    public String getText() {
+        return text;
+    }
+    public void setText(String text) {
+        this.text = text;
+        this.getMesh().deleteBuffers();
+        this.setMesh(buildMesh());
     }
 
     private Mesh buildMesh() {
@@ -84,15 +105,5 @@ public class TextItem extends HudElement {
         Mesh mesh = new Mesh(posArr, textCoordsArr, normals, indicesArr);
         mesh.setMaterial(new Material(fontTexture.getTexture()));
         return mesh;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
-        this.text = text;
-        this.getMesh().deleteBuffers();
-        this.setMesh(buildMesh());
     }
 }
