@@ -169,33 +169,8 @@ public class TrueType {
         return newBuffer;
     }
 
-    //todo: ?
-//    public STBTTBakedChar.Buffer init() {
-//        int BITMAP_W = round(168 * this.getContentScaleX());
-//        int BITMAP_H = round(168 * this.getContentScaleY());
-//
-//        texID = glGenTextures();
-//        STBTTBakedChar.Buffer cdata = STBTTBakedChar.malloc(96);
-//
-//        ByteBuffer bitmap = BufferUtils.createByteBuffer(BITMAP_W * BITMAP_H);
-//        stbtt_BakeFontBitmap(ttf, getFontHeight() * getContentScaleY(), bitmap, BITMAP_W, BITMAP_H, 32, cdata);
-//
-//        glBindTexture(GL_TEXTURE_2D, texID);
-//        glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, BITMAP_W, BITMAP_H, 0, GL_ALPHA, GL_UNSIGNED_BYTE, bitmap);
-//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-//
-//        glClearColor(43f / 255f, 43f / 255f, 43f / 255f, 0f); // BG color
-//        glClearColor(169f / 255f, 183f / 255f, 198f / 255f, 0f); // Text color
-//
-//        glEnable(GL_TEXTURE_2D);
-//        glEnable(GL_BLEND);
-//        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//        return cdata;
-//    }
-
     public void renderText(STBTTBakedChar.Buffer cdata, int bitmap_w, int bitmap_h) {
-        float scale = stbtt_ScaleForPixelHeight(info, getFontHeight()); //0.0062467465
+        float scale = stbtt_ScaleForPixelHeight(info, getFontHeight());
 
         try (MemoryStack stack = stackPush()) {
             IntBuffer pCodePoint = stack.mallocInt(1);

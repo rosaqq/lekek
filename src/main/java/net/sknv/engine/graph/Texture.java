@@ -80,16 +80,7 @@ public class Texture {
         this.height = BITMAP_H;
 
         ByteBuffer bitmap = BufferUtils.createByteBuffer(BITMAP_W * BITMAP_H);
-        int result = stbtt_BakeFontBitmap(font.getTtf(), font.getFontHeight() * font.getContentScaleY(), bitmap, BITMAP_W, BITMAP_H, 32, cdata);
-
-        System.out.println(result);
-
-//        StringBuilder sb = new StringBuilder();
-//        while (bitmap.hasRemaining()) {
-//            sb.append(String.format("%02X", bitmap.get()));
-//        }
-//        System.out.println(sb.toString());
-
+        stbtt_BakeFontBitmap(font.getTtf(), font.getFontHeight() * font.getContentScaleY(), bitmap, BITMAP_W, BITMAP_H, 32, cdata);
 
         glBindTexture(GL_TEXTURE_2D, id);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, BITMAP_W, BITMAP_H, 0, GL_RED, GL_UNSIGNED_BYTE, bitmap);
@@ -101,9 +92,9 @@ public class Texture {
         int swizzleMask[] = {GL_ZERO, GL_ZERO, GL_ZERO, GL_RED};
         glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
 
-        glEnable(GL_TEXTURE_2D);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     }
 
     private int createTexture(ByteBuffer buf) {

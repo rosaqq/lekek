@@ -71,7 +71,6 @@ public class UltimateKekGame implements IGameLogic {
 
         float zPos = 0;
         Mesh myMesh = new Mesh(new float[]{0,0,zPos,0,BITMAP_H,zPos,BITMAP_W,BITMAP_H,zPos,BITMAP_W,0,zPos}, new float[]{0,0,0,1,1,1,1,0},new float[0],new int[]{0,1,2,0,2,3}, GL_TRIANGLES);
-        //myMesh.setMaterial(new Material(new Texture("src/main/resources/textures/font_texture.png")));
         myMesh.setMaterial(new Material(new Texture(font)));
         myMesh.getMaterial().setAmbientColor(new Vector4f(1, 1, 1, 1));
 
