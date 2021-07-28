@@ -75,8 +75,9 @@ public class UltimateKekGame implements IGameLogic {
         HudElement myElement = new HudElement(myMesh);
         //
 
-        TextItem myTextItem = new TextItem("text", font);
+        TextItem myTextItem = new TextItem("Filho de Uma GRANDE PUTA", font);
         myTextItem.getMesh().getMaterial().setAmbientColor(new Vector4f(1, 1, 1, 1));
+        myTextItem.setPosition(200,200,0);
         //
 
         renderer.init();

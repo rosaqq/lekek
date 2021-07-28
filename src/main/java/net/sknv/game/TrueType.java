@@ -277,7 +277,7 @@ public class TrueType {
                 indices.add(counter*4+3);
 
                 indices.add(counter*4);
-                indices.add(counter*4+1);
+                indices.add(counter*4+2);
 
     //                glTexCoord2f(q.s0(), q.t0());
     //                glVertex2f(x0, y0);
