@@ -23,16 +23,16 @@ public class Hud implements IHud {
 
     private final ArrayList<HudElement> hudElements;
 
-    private final TextItem statusTextItem;
+    private final TextItem myStatusTextItem;
 
     private final HudElement compassItem;
 
     private final HudTerminal terminal;
 
-    public Hud(String statusText) throws Exception {
+    public Hud(String statusText, TrueType font) throws Exception {
         FontTexture fontTexture = new FontTexture(FONT, CHARSET);
-        this.statusTextItem = new TextItem(statusText, fontTexture);
-        this.statusTextItem.getMesh().getMaterial().setAmbientColor(new Vector4f(1, 1, 1, 1));
+
+        this.myStatusTextItem = new TextItem(statusText, font);
 
         this.terminal = new HudTerminal(new TextItem("/", fontTexture));
 
@@ -47,11 +47,11 @@ public class Hud implements IHud {
         compassItem.setRotationEuclidean(new Vector3f(0f, 0f, (float)Math.PI));
 
         // Create list that holds the items that compose the HUD
-        hudElements = new ArrayList<>(List.of(statusTextItem, compassItem));
+        hudElements = new ArrayList<>(List.of(myStatusTextItem, compassItem));
     }
 
     public void setStatusText(String statusText) {
-        this.statusTextItem.setText(statusText);
+        this.myStatusTextItem.setText(statusText);
     }
 
     public void rotateCompass(float angle) {
@@ -64,7 +64,10 @@ public class Hud implements IHud {
     }
 
     public void updateSize(Window window) {
-        this.statusTextItem.setPosition(window.getCenter().x, window.getCenter().y, 0);
+        Vector3f dif = new Vector3f();
+        myStatusTextItem.getMesh().getMax().sub(myStatusTextItem.getMesh().getMin(), dif).div(2f);
+        this.myStatusTextItem.setPosition(window.getCenter().x - dif.x, window.getCenter().y + dif.y, 0);
+
         this.compassItem.setPosition(window.getWidth() - 40f, 50f, 0);
         this.terminal.getTextItem().setPosition(0f, window.getHeight()-20f, 0);
     }

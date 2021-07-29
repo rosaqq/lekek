@@ -33,7 +33,6 @@ public class TextItem extends HudElement {
         //todo: deprecate fontTexture -> Texture
         this.fontTexture = null;
         this.font = font;
-
         setMesh(font.renderText(text));
     }
 
@@ -43,7 +42,7 @@ public class TextItem extends HudElement {
     public void setText(String text) {
         this.text = text;
         this.getMesh().deleteBuffers();
-        this.setMesh(buildMesh());
+        this.setMesh(font.renderText(text));
     }
 
     private Mesh buildMesh() {

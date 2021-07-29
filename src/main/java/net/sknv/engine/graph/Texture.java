@@ -77,9 +77,6 @@ public class Texture {
 
         int swizzleMask[] = {GL_ZERO, GL_ZERO, GL_ZERO, GL_RED};
         glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
-
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 
     public Texture(int id, int width, int height){
@@ -105,8 +102,6 @@ public class Texture {
                 GL_RGBA, GL_UNSIGNED_BYTE, buf);
         // Generate Mip Map
         glGenerateMipmap(GL_TEXTURE_2D);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         return textureId;
     }

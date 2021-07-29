@@ -75,9 +75,8 @@ public class UltimateKekGame implements IGameLogic {
         HudElement myElement = new HudElement(myMesh);
         //
 
-        TextItem myTextItem = new TextItem("Filho de Uma GRANDE PUTA", font);
-        myTextItem.getMesh().getMaterial().setAmbientColor(new Vector4f(1, 1, 1, 1));
-        myTextItem.setPosition(200,200,0);
+        TextItem myTextItem = new TextItem("placeholder", font);
+        myTextItem.setPosition(150,352,0);
         //
 
         renderer.init();
@@ -93,10 +92,10 @@ public class UltimateKekGame implements IGameLogic {
         initPhysicsEngine();
 
         // Setup HUD
-        hud = new Hud("+");
+        hud = new Hud("+", font);
         //todo:spaghetti
-        hud.addElement(myElement);
         hud.addElement(myTextItem);
+        hud.addElement(myElement);
 
         //Setup Camera
         camera.setPosition(0.65f, 1.15f, 4.34f);
@@ -260,20 +259,6 @@ public class UltimateKekGame implements IGameLogic {
     @Override
     public void render() {
         renderer.render(projectionMatrix, viewMatrix, ortho, scene, hud);
-
-        //todo: super spaghet, hard code
-            //glClear(GL_COLOR_BUFFER_BIT);
-
-            float scaleFactor = 1.0f + font.getScale() * 0.25f;
-
-            // Zoom
-            //glScalef(scaleFactor, scaleFactor, 1f);
-            // Scroll
-            //glTranslatef(4.0f, font.getFontHeight() * 0.5f + 4.0f - font.getLineOffset() * font.getFontHeight(), 0f);
-
-            //font.renderText(cdata, BITMAP_W, BITMAP_H);
-
-        //cdata.free();//on cleanup!
     }
 
     @Override

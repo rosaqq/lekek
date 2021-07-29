@@ -60,11 +60,11 @@ public class TrueType {
     private boolean kerningEnabled = true;
     private boolean lineBBEnabled = false;
 
-    private int BITMAP_SIZE = 168;
+    private int BITMAP_SIZE = 352;
     private int BITMAP_W;
     private int BITMAP_H;
     private Texture bitmapTexture;
-    private final STBTTBakedChar.Buffer cdata = STBTTBakedChar.malloc(96);
+    private final STBTTBakedChar.Buffer cdata = STBTTBakedChar.malloc(352);
 
     public TrueType(long window){
         try {//todo: hardcode
@@ -108,7 +108,7 @@ public class TrueType {
             contentScaleY = py.get(0);
         }
 
-        //BakeBitMapTexure
+        //BakeBitMapTexure todo: ensure bitmap texture contains all characters, if it doesnt -> weird behaviour
         BITMAP_W = round(BITMAP_SIZE * contentScaleX);
         BITMAP_H = round(BITMAP_SIZE * contentScaleY);
 
@@ -230,7 +230,7 @@ public class TrueType {
 
                     lineStart = i;
                     continue;
-                } else if (cp < 32 || 128 <= cp) {
+                } else if (cp < 32 || 354 <= cp) {
                     continue;
                 }
 
