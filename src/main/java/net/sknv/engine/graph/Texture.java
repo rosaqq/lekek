@@ -79,12 +79,6 @@ public class Texture {
         glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
     }
 
-    public Texture(int id, int width, int height){
-        this.id = id;
-        this.width = width;
-        this.height = height;
-    }
-
     private int createTexture(ByteBuffer buf) {
         // Create a new OpenGL texture
         int textureId = glGenTextures();
