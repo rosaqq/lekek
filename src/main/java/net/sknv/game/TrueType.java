@@ -25,12 +25,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import static java.lang.Math.*;
+import static java.lang.Math.round;
 import static org.lwjgl.BufferUtils.createByteBuffer;
-import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFW.glfwGetMonitorContentScale;
+import static org.lwjgl.glfw.GLFW.glfwGetPrimaryMonitor;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.stb.STBTruetype.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
@@ -47,13 +46,10 @@ public class TrueType {
     private float contentScaleY;
     private float contentScaleX;
 
-    private String text = "placeholder";
-    private final   int    lineCount;
-
     private int ww = 800;
     private int wh = 600;
 
-    private int   scale = 1;
+    private float scale;
     private int   lineOffset = 0;
     private float lineHeight = 0;
 
@@ -66,7 +62,7 @@ public class TrueType {
     private Texture bitmapTexture;
     private final STBTTBakedChar.Buffer cdata = STBTTBakedChar.malloc(352);
 
-    public TrueType(long window){
+    public TrueType(){
         try {//todo: hardcode
             this.ttf = ioResourceToByteBuffer("src/main/resources/fonts/Roboto-Regular.ttf", 168 * 1024);
         } catch (Exception e) {
@@ -89,15 +85,7 @@ public class TrueType {
             lineGap = pLineGap.get(0);
         }
 
-        Matcher m = Pattern.compile("^.*$", Pattern.MULTILINE).matcher(text);
-        int lc = 0;
-        while (m.find()) {
-            lc++;
-        }
-        lineCount = lc;
-
         //set content scale
-        glfwMakeContextCurrent(window);
         try (MemoryStack s = stackPush()) {
             FloatBuffer px = s.mallocFloat(1);
             FloatBuffer py = s.mallocFloat(1);
@@ -107,6 +95,7 @@ public class TrueType {
             contentScaleX = px.get(0);
             contentScaleY = py.get(0);
         }
+        scale = stbtt_ScaleForPixelHeight(info, getFontHeight());
 
         //BakeBitMapTexure todo: ensure bitmap texture contains all characters, if it doesnt -> weird behaviour
         BITMAP_W = round(BITMAP_SIZE * contentScaleX);
@@ -121,9 +110,6 @@ public class TrueType {
     public STBTTFontinfo getInfo() {
         return info;
     }
-    public int getScale() {
-        return scale;
-    }
     public float getContentScaleX() {
         return contentScaleX;
     }
@@ -133,20 +119,11 @@ public class TrueType {
     public int getFontHeight() {
         return fontHeight;
     }
-    public int getLineOffset() {
-        return lineOffset;
-    }
     private boolean isLineBBEnabled() {
         return lineBBEnabled;
     }
     private boolean isKerningEnabled() {
         return kerningEnabled;
-    }
-    private void setLineOffset(float offset) {
-        setLineOffset(round(offset));
-    }
-    private void setLineOffset(int offset) {
-        lineOffset = max(0, min(offset, lineCount - (int)(wh / lineHeight)));
     }
 
     public static ByteBuffer ioResourceToByteBuffer(String resource, int bufferSize) throws IOException {
@@ -191,7 +168,6 @@ public class TrueType {
     }
 
     public Mesh renderText(String text) {
-        float scale = stbtt_ScaleForPixelHeight(info, getFontHeight());
         List<Float> positions = new ArrayList<>();
         List<Float> textureCoordinates = new ArrayList<>();
         float[] normals = new float[0];
@@ -310,7 +286,7 @@ public class TrueType {
         return (offset - center) * factor + center;
     }
 
-    private void renderLineBB(String text, int from, int to, float y, float scale) {
+    private void renderLineBB(String text, int from, int to, float y, float scale) {//todo: old opengl
         glDisable(GL_TEXTURE_2D);
         glPolygonMode(GL_FRONT, GL_LINE);
         glColor3f(1.0f, 1.0f, 0.0f);
@@ -379,12 +355,10 @@ public class TrueType {
         this.ww = width;
         this.wh = height;
 
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        glOrtho(0.0, width, height, 0.0, -1.0, 1.0);
-        glMatrixMode(GL_MODELVIEW);
-
-        setLineOffset(lineOffset);
+//        glMatrixMode(GL_PROJECTION);
+//        glLoadIdentity();
+//        glOrtho(0.0, width, height, 0.0, -1.0, 1.0);
+//        glMatrixMode(GL_MODELVIEW);
     }
 
     public int getBitMapW() {

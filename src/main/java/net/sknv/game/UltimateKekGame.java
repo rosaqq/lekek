@@ -4,20 +4,23 @@ import net.sknv.engine.IGameLogic;
 import net.sknv.engine.MouseInput;
 import net.sknv.engine.Scene;
 import net.sknv.engine.Window;
-import net.sknv.engine.entities.*;
+import net.sknv.engine.entities.AbstractGameItem;
+import net.sknv.engine.entities.Collider;
+import net.sknv.engine.entities.Phantom;
 import net.sknv.engine.graph.*;
 import net.sknv.engine.physics.PhysicsEngine;
 import net.sknv.engine.physics.colliders.OBB;
-import org.joml.*;
+import org.joml.Matrix4f;
+import org.joml.Quaternionf;
+import org.joml.Vector2f;
+import org.joml.Vector3f;
 
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
-import java.lang.Math;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
 import static org.lwjgl.opengl.GL11.glViewport;
 
 public class UltimateKekGame implements IGameLogic {
@@ -44,9 +47,6 @@ public class UltimateKekGame implements IGameLogic {
     private Scene scene;
     private Hud hud;
 
-    //font stuff
-    private TrueType font;
-
     //collisions stuff
     private PhysicsEngine physicsEngine;
     public Collider selectedItem;
@@ -60,50 +60,18 @@ public class UltimateKekGame implements IGameLogic {
 
     @Override
     public void init(Window window, MouseInput mouseInput) throws Exception {
-        //todo: spaghet
-        font = new TrueType(window.getWindowHandle());
-
-        int BITMAP_W = font.getBitMapW();
-        int BITMAP_H = font.getBitMapH();
-        Texture texture = font.getBitMapTexture();
-
-        float zPos = 0;
-        Mesh myMesh = new Mesh(new float[]{0,0,zPos,0,BITMAP_H,zPos,BITMAP_W,BITMAP_H,zPos,BITMAP_W,0,zPos}, new float[]{0,0,0,1,1,1,1,0},new float[0],new int[]{0,1,2,0,2,3}, GL_TRIANGLES);
-        myMesh.setMaterial(new Material(texture));
-        myMesh.getMaterial().setAmbientColor(new Vector4f(1, 1, 1, 1));
-
-        HudElement myElement = new HudElement(myMesh);
-        //
-
-        TextItem myTextItem = new TextItem("placeholder", font);
-        myTextItem.setPosition(150,352,0);
-        //
-
         renderer.init();
-        setKeyCallbacks(window, mouseInput);
-        //fontstuff
-        glfwSetWindowSizeCallback(window.getWindowHandle(), font::windowSizeChanged);
-
         initScene("default");
-
-        Mesh line = MeshUtils.generateLine(WebColor.Red, new Vector3f(0,0,0), new Vector3f(10,10,0));
-        //scene.addGameItem(new Phantom(line));
-
         initPhysicsEngine();
+        initCamera();
+        initHud();
 
-        // Setup HUD
-        hud = new Hud("+", font);
-        //todo:spaghetti
-        hud.addElement(myTextItem);
-        hud.addElement(myElement);
-
-        //Setup Camera
-        camera.setPosition(0.65f, 1.15f, 4.34f);
+        setKeyCallbacks(window, mouseInput);
+        //glfwSetWindowSizeCallback(window.getWindowHandle(), font::windowSizeChanged);
     }
 
     public void initScene(String scene) {
         try {
-
             if (scene.equals("default")) this.scene = new Scene();
             else {
                 FileInputStream file = new FileInputStream("src/main/resources/scenes/" + scene + ".ser");
@@ -134,6 +102,14 @@ public class UltimateKekGame implements IGameLogic {
                 }
             }
         }
+    }
+
+    private void initCamera() {
+        camera.setPosition(0.65f, 1.15f, 4.34f);
+    }
+
+    private void initHud() throws Exception {
+        hud = new Hud(new TrueType());
     }
 
     @Override
