@@ -4,22 +4,16 @@ import net.sknv.engine.IHud;
 import net.sknv.engine.Window;
 import net.sknv.engine.entities.HudElement;
 import net.sknv.engine.entities.TextItem;
-import net.sknv.engine.graph.FontTexture;
 import net.sknv.engine.graph.Material;
 import net.sknv.engine.graph.Mesh;
 import net.sknv.engine.graph.OBJLoader;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Hud implements IHud {
-
-    private static final Font FONT = new Font("Arial", Font.PLAIN, 20);
-
-    private static final String CHARSET = "ISO-8859-1";
 
     private final ArrayList<HudElement> hudElements;
 
@@ -29,12 +23,11 @@ public class Hud implements IHud {
 
     private final HudTerminal terminal;
 
-    public Hud(String statusText, TrueType font) throws Exception {
-        FontTexture fontTexture = new FontTexture(FONT, CHARSET);
+    public Hud(TrueType font) throws Exception {
 
-        this.myStatusTextItem = new TextItem(statusText, font);
+        this.myStatusTextItem = new TextItem("+", font);
 
-        this.terminal = new HudTerminal(new TextItem("/", fontTexture));
+        this.terminal = new HudTerminal(new TextItem("/", font));
 
         // Create compass
         Mesh mesh = OBJLoader.loadMesh("/models/compass.obj");
@@ -63,13 +56,12 @@ public class Hud implements IHud {
         return hudElements;
     }
 
-    public void updateSize(Window window) {
-        Vector3f dif = new Vector3f();
-        myStatusTextItem.getMesh().getMax().sub(myStatusTextItem.getMesh().getMin(), dif).div(2f);
+    public void updateSize(Window window) {//todo: make this not run every update
+        Vector3f dif = myStatusTextItem.getMesh().getMax().sub(myStatusTextItem.getMesh().getMin(), new Vector3f()).div(2f);
         this.myStatusTextItem.setPosition(window.getCenter().x - dif.x, window.getCenter().y + dif.y, 0);
 
         this.compassItem.setPosition(window.getWidth() - 40f, 50f, 0);
-        this.terminal.getTextItem().setPosition(0f, window.getHeight()-20f, 0);
+        this.terminal.getTextItem().setPosition(0f, window.getHeight()-5f, 0);
     }
 
     public HudTerminal getTerminal() {
