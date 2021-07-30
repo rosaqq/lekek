@@ -5,10 +5,7 @@ import net.sknv.engine.graph.Material;
 import net.sknv.engine.graph.Mesh;
 import net.sknv.engine.graph.Texture;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.stb.STBTTAlignedQuad;
-import org.lwjgl.stb.STBTTBakedChar;
-import org.lwjgl.stb.STBTTFontinfo;
-import org.lwjgl.stb.STBTruetype;
+import org.lwjgl.stb.*;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.Platform;
 
@@ -56,11 +53,12 @@ public class TrueType {
     private boolean kerningEnabled = true;
     private boolean lineBBEnabled = false;
 
-    private int BITMAP_SIZE = 352;
+    private int BITMAP_SIZE = 250;
     private int BITMAP_W;
     private int BITMAP_H;
     private Texture bitmapTexture;
     private final STBTTBakedChar.Buffer cdata = STBTTBakedChar.malloc(352);
+    private final STBTTPackedchar.Buffer myCharData = STBTTPackedchar.malloc(352);
 
     public TrueType(){
         try {//todo: hardcode
@@ -101,10 +99,15 @@ public class TrueType {
         BITMAP_W = round(BITMAP_SIZE * contentScaleX);
         BITMAP_H = round(BITMAP_SIZE * contentScaleY);
 
-        ByteBuffer bitmap = BufferUtils.createByteBuffer(BITMAP_W * BITMAP_H);
-        stbtt_BakeFontBitmap(ttf, fontHeight * contentScaleY, bitmap, BITMAP_W, BITMAP_H, 32, cdata);
+        ByteBuffer packedBitmap = BufferUtils.createByteBuffer(BITMAP_W * BITMAP_H);
 
-        bitmapTexture = new Texture(bitmap, BITMAP_W, BITMAP_H);
+        STBTTPackContext context = STBTTPackContext.mallocStack();
+        stbtt_PackBegin(context, packedBitmap,BITMAP_W, BITMAP_H,0,1);
+        System.out.println(stbtt_PackFontRange(context,ttf,0, 22, 32, myCharData));
+
+        stbtt_PackEnd(context);
+
+        bitmapTexture = new Texture(packedBitmap, BITMAP_W, BITMAP_H);
     }
 
     public STBTTFontinfo getInfo() {
@@ -126,45 +129,8 @@ public class TrueType {
         return kerningEnabled;
     }
 
-    public static ByteBuffer ioResourceToByteBuffer(String resource, int bufferSize) throws IOException {
-        ByteBuffer buffer;
+    public void bakeBitMap(int fontHeight){
 
-        Path path = Paths.get(resource);
-        if (Files.isReadable(path)) {
-            try (SeekableByteChannel fc = Files.newByteChannel(path)) {
-                buffer = createByteBuffer((int)fc.size() + 1);
-                while (fc.read(buffer) != -1) {
-                    ;
-                }
-            }
-        } else {
-            try (
-                    InputStream source = TrueType.class.getClassLoader().getResourceAsStream(resource);
-                    ReadableByteChannel rbc = Channels.newChannel(source)
-            ) {
-                buffer = createByteBuffer(bufferSize);
-
-                while (true) {
-                    int bytes = rbc.read(buffer);
-                    if (bytes == -1) {
-                        break;
-                    }
-                    if (buffer.remaining() == 0) {
-                        buffer = resizeBuffer(buffer, buffer.capacity() * 3 / 2); // 50%
-                    }
-                }
-            }
-        }
-
-        buffer.flip();
-        return memSlice(buffer);
-    }
-
-    private static ByteBuffer resizeBuffer(ByteBuffer buffer, int newCapacity) {
-        ByteBuffer newBuffer = createByteBuffer(newCapacity);
-        buffer.flip();
-        newBuffer.put(buffer);
-        return newBuffer;
     }
 
     public Mesh renderText(String text) {
@@ -211,7 +177,7 @@ public class TrueType {
                 }
 
                 float cpX = x.get(0);
-                stbtt_GetBakedQuad(cdata, BITMAP_W, BITMAP_H, cp - 32, x, y, q, true);
+                stbtt_GetPackedQuad(myCharData, BITMAP_W, BITMAP_H, cp - 32, x, y, q, true);
                 x.put(0, scale(cpX, x.get(0), factorX));
                 if (isKerningEnabled() && i < to) {
                     getCP(text, to, i, pCodePoint);
@@ -255,17 +221,6 @@ public class TrueType {
                 indices.add(counter*4);
                 indices.add(counter*4+2);
 
-    //                glTexCoord2f(q.s0(), q.t0());
-    //                glVertex2f(x0, y0);
-    //
-    //                glTexCoord2f(q.s1(), q.t0());
-    //                glVertex2f(x1, y0);
-    //
-    //                glTexCoord2f(q.s1(), q.t1());
-    //                glVertex2f(x1, y1);
-    //
-    //                glTexCoord2f(q.s0(), q.t1());
-    //                glVertex2f(x0, y1);
                 counter++;
             }
             if (isLineBBEnabled()) {
@@ -280,6 +235,47 @@ public class TrueType {
         Mesh mesh = new Mesh(pos, tex, normals, idx);
         mesh.setMaterial(new Material(bitmapTexture));
         return mesh;
+    }
+
+    public static ByteBuffer ioResourceToByteBuffer(String resource, int bufferSize) throws IOException {
+        ByteBuffer buffer;
+
+        Path path = Paths.get(resource);
+        if (Files.isReadable(path)) {
+            try (SeekableByteChannel fc = Files.newByteChannel(path)) {
+                buffer = createByteBuffer((int)fc.size() + 1);
+                while (fc.read(buffer) != -1) {
+                    ;
+                }
+            }
+        } else {
+            try (
+                    InputStream source = TrueType.class.getClassLoader().getResourceAsStream(resource);
+                    ReadableByteChannel rbc = Channels.newChannel(source)
+            ) {
+                buffer = createByteBuffer(bufferSize);
+
+                while (true) {
+                    int bytes = rbc.read(buffer);
+                    if (bytes == -1) {
+                        break;
+                    }
+                    if (buffer.remaining() == 0) {
+                        buffer = resizeBuffer(buffer, buffer.capacity() * 3 / 2); // 50%
+                    }
+                }
+            }
+        }
+
+        buffer.flip();
+        return memSlice(buffer);
+    }
+
+    private static ByteBuffer resizeBuffer(ByteBuffer buffer, int newCapacity) {
+        ByteBuffer newBuffer = createByteBuffer(newCapacity);
+        buffer.flip();
+        newBuffer.put(buffer);
+        return newBuffer;
     }
 
     private float scale(float center, float offset, float factor) {
