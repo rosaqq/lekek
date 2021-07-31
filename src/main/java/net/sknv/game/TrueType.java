@@ -17,6 +17,8 @@ import java.nio.IntBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SeekableByteChannel;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -50,19 +52,17 @@ public class TrueType {
     private int   lineOffset = 0;
     private float lineHeight = 0;
 
-    private boolean kerningEnabled = true;
+    private boolean kerningEnabled = false;//todo: stbtt_GetCodepointKernAdvance throws access violation sometimes(?) so its set to false while no fix
     private boolean lineBBEnabled = false;
 
-    private int BITMAP_SIZE = 250;
-    private int BITMAP_W;
-    private int BITMAP_H;
+    private int BITMAP_W = 512;//todo: find a way to calculate bitmap texture size
+    private int BITMAP_H = 512;
     private Texture bitmapTexture;
-    private final STBTTBakedChar.Buffer cdata = STBTTBakedChar.malloc(352);
-    private final STBTTPackedchar.Buffer myCharData = STBTTPackedchar.malloc(352);
+    private STBTTPackedchar.Buffer myCharData;
 
-    public TrueType(){
+    public TrueType(String inputFile){
         try {//todo: hardcode
-            this.ttf = ioResourceToByteBuffer("src/main/resources/fonts/Roboto-Regular.ttf", 168 * 1024);
+            this.ttf = ioResourceToByteBuffer(inputFile);
         } catch (Exception e) {
             System.out.println("failed to load font");
             throw new RuntimeException(e);
@@ -95,15 +95,43 @@ public class TrueType {
         }
         scale = stbtt_ScaleForPixelHeight(info, getFontHeight());
 
-        //BakeBitMapTexure todo: ensure bitmap texture contains all characters, if it doesnt -> weird behaviour
-        BITMAP_W = round(BITMAP_SIZE * contentScaleX);
-        BITMAP_H = round(BITMAP_SIZE * contentScaleY);
+        //BakeBitMapTexure
+        BITMAP_W = round(BITMAP_W * contentScaleX);
+        BITMAP_H = round(BITMAP_H * contentScaleY);
 
-        ByteBuffer packedBitmap = BufferUtils.createByteBuffer(BITMAP_W * BITMAP_H);
+        Charset myCharset = Charset.defaultCharset();
+        CharsetEncoder en = myCharset.newEncoder();
+
+        ArrayList<Integer> result = new ArrayList<>();
+        for (char c = 0; c < Character.MAX_VALUE; c++) {
+            int codePoint = c;
+            int glyphIndex = stbtt_FindGlyphIndex(info, codePoint);
+            if(en.canEncode(c) && glyphIndex!=0){
+                result.add(codePoint);
+                System.out.println(codePoint);
+            }
+        }
+
+        System.out.println(result.size());
+
+        int[] cp = new int[result.size()];
+        for (int i=0; i < cp.length; i++) cp[i] = result.get(i);
+        IntBuffer unicodeCodepoints = IntBuffer.wrap(cp);
+
+        System.out.println(cp.length);
+
+        myCharData = STBTTPackedchar.malloc(cp.length);
+
+        STBTTPackRange.Buffer packRanges = STBTTPackRange.malloc(2);
+        packRanges.put(STBTTPackRange.create().set(22, 0, unicodeCodepoints, cp.length, myCharData, (byte) 0, (byte) 0));
+        packRanges.flip();
 
         STBTTPackContext context = STBTTPackContext.mallocStack();
+        ByteBuffer packedBitmap = BufferUtils.createByteBuffer(BITMAP_W * BITMAP_H);
+
         stbtt_PackBegin(context, packedBitmap,BITMAP_W, BITMAP_H,0,1);
-        System.out.println(stbtt_PackFontRange(context,ttf,0, 22, 32, myCharData));
+
+        System.out.println(stbtt_PackFontRanges(context, ttf,0, packRanges));
 
         stbtt_PackEnd(context);
 
@@ -172,15 +200,15 @@ public class TrueType {
 
                     lineStart = i;
                     continue;
-                } else if (cp < 32 || 354 <= cp) {
-                    continue;
                 }
 
                 float cpX = x.get(0);
-                stbtt_GetPackedQuad(myCharData, BITMAP_W, BITMAP_H, cp - 32, x, y, q, true);
+                stbtt_GetPackedQuad(myCharData, BITMAP_W, BITMAP_H, cp, x, y, q, true);
                 x.put(0, scale(cpX, x.get(0), factorX));
                 if (isKerningEnabled() && i < to) {
                     getCP(text, to, i, pCodePoint);
+                    System.out.println(cp);
+                    System.out.println(pCodePoint.get(0));
                     x.put(0, x.get(0) + stbtt_GetCodepointKernAdvance(info, cp, pCodePoint.get(0)) * scale);
                 }
 
@@ -237,23 +265,21 @@ public class TrueType {
         return mesh;
     }
 
-    public static ByteBuffer ioResourceToByteBuffer(String resource, int bufferSize) throws IOException {
+    public static ByteBuffer ioResourceToByteBuffer(String resource) throws IOException {
         ByteBuffer buffer;
 
         Path path = Paths.get(resource);
         if (Files.isReadable(path)) {
             try (SeekableByteChannel fc = Files.newByteChannel(path)) {
                 buffer = createByteBuffer((int)fc.size() + 1);
-                while (fc.read(buffer) != -1) {
-                    ;
-                }
+                while (fc.read(buffer) != -1);
             }
         } else {
             try (
                     InputStream source = TrueType.class.getClassLoader().getResourceAsStream(resource);
                     ReadableByteChannel rbc = Channels.newChannel(source)
             ) {
-                buffer = createByteBuffer(bufferSize);
+                buffer = createByteBuffer(1024);
 
                 while (true) {
                     int bytes = rbc.read(buffer);

@@ -28,6 +28,7 @@ public class UltimateKekGame implements IGameLogic {
     private static final float FOV = (float) Math.toRadians(60.0f);
     private static final float Z_NEAR = 0.01f;
     private static final float Z_FAR = 1000.f;
+    private static final String FONTFILE = "src/main/resources/fonts/DejaVuSans.ttf";
 
     private static Matrix4f projectionMatrix, viewMatrix, ortho;
     private ArrayList<RayCast> rayCasts = new ArrayList<>();
@@ -109,7 +110,7 @@ public class UltimateKekGame implements IGameLogic {
     }
 
     private void initHud() throws Exception {
-        hud = new Hud(new TrueType());
+        hud = new Hud(new TrueType(FONTFILE));
     }
 
     @Override
