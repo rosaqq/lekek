@@ -7,7 +7,6 @@ import net.sknv.engine.graph.Texture;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.stb.*;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.Platform;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,8 +16,6 @@ import java.nio.IntBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SeekableByteChannel;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -44,9 +41,6 @@ public class TrueType {
     private int fontHeight = 24;
     private float contentScaleY;
     private float contentScaleX;
-
-    private int ww = 800;
-    private int wh = 600;
 
     private float scale;
     private int   lineOffset = 0;
@@ -99,40 +93,16 @@ public class TrueType {
         BITMAP_W = round(BITMAP_W * contentScaleX);
         BITMAP_H = round(BITMAP_H * contentScaleY);
 
-        Charset myCharset = Charset.defaultCharset();
-        CharsetEncoder en = myCharset.newEncoder();
+        myCharData = STBTTPackedchar.malloc(1000);
 
-        ArrayList<Integer> result = new ArrayList<>();
-        for (char c = 0; c < Character.MAX_VALUE; c++) {
-            int codePoint = c;
-            int glyphIndex = stbtt_FindGlyphIndex(info, codePoint);
-            if(en.canEncode(c) && glyphIndex!=0){
-                result.add(codePoint);
-                System.out.println(codePoint);
-            }
-        }
+        STBTTPackRange.Buffer packRanges = STBTTPackRange.malloc(1);
+        packRanges.put(STBTTPackRange.create().set(24, 0, null, 1000, myCharData, (byte) 0, (byte) 0)).flip();
 
-        System.out.println(result.size());
-
-        int[] cp = new int[result.size()];
-        for (int i=0; i < cp.length; i++) cp[i] = result.get(i);
-        IntBuffer unicodeCodepoints = IntBuffer.wrap(cp);
-
-        System.out.println(cp.length);
-
-        myCharData = STBTTPackedchar.malloc(cp.length);
-
-        STBTTPackRange.Buffer packRanges = STBTTPackRange.malloc(2);
-        packRanges.put(STBTTPackRange.create().set(22, 0, unicodeCodepoints, cp.length, myCharData, (byte) 0, (byte) 0));
-        packRanges.flip();
-
-        STBTTPackContext context = STBTTPackContext.mallocStack();
+        STBTTPackContext context = STBTTPackContext.malloc();
         ByteBuffer packedBitmap = BufferUtils.createByteBuffer(BITMAP_W * BITMAP_H);
 
         stbtt_PackBegin(context, packedBitmap,BITMAP_W, BITMAP_H,0,1);
-
-        System.out.println(stbtt_PackFontRanges(context, ttf,0, packRanges));
-
+        stbtt_PackFontRanges(context, ttf,0, packRanges);
         stbtt_PackEnd(context);
 
         bitmapTexture = new Texture(packedBitmap, BITMAP_W, BITMAP_H);
@@ -155,10 +125,6 @@ public class TrueType {
     }
     private boolean isKerningEnabled() {
         return kerningEnabled;
-    }
-
-    public void bakeBitMap(int fontHeight){
-
     }
 
     public Mesh renderText(String text) {
@@ -365,22 +331,6 @@ public class TrueType {
         }
         cpOut.put(0, c1);
         return 1;
-    }
-
-    //todo: rework, old code
-    protected void windowSizeChanged(long window, int width, int height){
-        if (Platform.get() != Platform.MACOSX) {
-            width /= contentScaleX;
-            height /= contentScaleY;
-        }
-
-        this.ww = width;
-        this.wh = height;
-
-//        glMatrixMode(GL_PROJECTION);
-//        glLoadIdentity();
-//        glOrtho(0.0, width, height, 0.0, -1.0, 1.0);
-//        glMatrixMode(GL_MODELVIEW);
     }
 
     public int getBitMapW() {

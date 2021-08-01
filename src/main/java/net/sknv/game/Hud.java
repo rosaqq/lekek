@@ -13,8 +13,6 @@ import org.joml.Vector4f;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
-
 public class Hud implements IHud {
 
     private final ArrayList<HudElement> hudElements;
@@ -41,17 +39,17 @@ public class Hud implements IHud {
         // Rotate to transform it to screen coordinates
         compassItem.setRotationEuclidean(new Vector3f(0f, 0f, (float)Math.PI));
 
-        //temp
-        int BITMAP_W = font.getBitMapW();
-        int BITMAP_H = font.getBitMapH();
-
-        float zPos = 0;
-        Mesh myMesh = new Mesh(new float[]{0,0,zPos,0,font.getBitMapH(),zPos,BITMAP_W,BITMAP_H,zPos,BITMAP_W,0,zPos}, new float[]{0,0,0,1,1,1,1,0},new float[0],new int[]{0,1,2,0,2,3}, GL_TRIANGLES);
-        myMesh.setMaterial(new Material(font.getBitMapTexture()));
-        HudElement bitmap = new HudElement(myMesh);
+        //bitmap texture
+//        int BITMAP_W = font.getBitMapW();
+//        int BITMAP_H = font.getBitMapH();
+//
+//        float zPos = 0;
+//        Mesh myMesh = new Mesh(new float[]{0,0,zPos,0,font.getBitMapH(),zPos,BITMAP_W,BITMAP_H,zPos,BITMAP_W,0,zPos}, new float[]{0,0,0,1,1,1,1,0},new float[0],new int[]{0,1,2,0,2,3}, GL_TRIANGLES);
+//        myMesh.setMaterial(new Material(font.getBitMapTexture()));
+//        HudElement bitmap = new HudElement(myMesh);
 
         // Create list that holds the items that compose the HUD
-        hudElements = new ArrayList<>(List.of(myStatusTextItem, compassItem, bitmap));
+        hudElements = new ArrayList<>(List.of(myStatusTextItem, compassItem));
     }
 
     public void setStatusText(String statusText) {
