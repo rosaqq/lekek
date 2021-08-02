@@ -1,9 +1,12 @@
 package net.sknv.engine;
 
+import org.lwjgl.BufferUtils;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -18,6 +21,13 @@ public class Utils {
         }
 
         return result;
+    }
+
+    private static ByteBuffer resizeBuffer(ByteBuffer buffer, int newCapacity) {
+        ByteBuffer newBuffer = BufferUtils.createByteBuffer(newCapacity);
+        buffer.flip();
+        newBuffer.put(buffer);
+        return newBuffer;
     }
 
     public static List<String> readAllLines(String fileName) throws IOException, ClassNotFoundException {

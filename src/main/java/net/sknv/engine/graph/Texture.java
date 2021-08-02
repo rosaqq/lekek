@@ -7,6 +7,7 @@ import java.nio.IntBuffer;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL30.glGenerateMipmap;
+import static org.lwjgl.opengl.GL33.GL_TEXTURE_SWIZZLE_RGBA;
 import static org.lwjgl.stb.STBImage.*;
 
 public class Texture {
@@ -62,6 +63,20 @@ public class Texture {
         this.id = createTexture(buf);
 
         stbi_image_free(buf);
+    }
+
+    public Texture(ByteBuffer bitmap, int width, int height){
+        this.id = glGenTextures();
+        this.width = width;
+        this.height = height;
+
+        glBindTexture(GL_TEXTURE_2D, id);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, bitmap);
+
+        int swizzleMask[] = {GL_ZERO, GL_ZERO, GL_ZERO, GL_RED};
+        glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
     }
 
     private int createTexture(ByteBuffer buf) {

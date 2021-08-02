@@ -2,6 +2,7 @@ package net.sknv.engine.graph;
 
 import net.sknv.engine.entities.AbstractGameItem;
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class Transformation {
@@ -83,12 +84,11 @@ public class Transformation {
 
     public static Matrix4f getViewMatrix(Camera camera) {
         Vector3f cameraPos = camera.getPosition();
-        Vector3f rot = camera.getRotation();
+        Quaternionf rot = camera.getRotation();
 
         viewMatrix.identity();
         //must rotate first so camera rotates over it's position
-        viewMatrix.rotate(rot.x, new Vector3f(1, 0, 0))
-                .rotate(rot.y, new Vector3f(0, 1, 0));
+        viewMatrix.rotate(rot);
         //then do translation
         viewMatrix.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
         return viewMatrix;

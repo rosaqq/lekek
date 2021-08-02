@@ -1,14 +1,14 @@
 package net.sknv.engine.graph;
 
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class Camera {
 
     private final Vector3f position;
+    private final Quaternionf rotation;
 
-    private final Vector3f rotation;
-
-    public Camera(Vector3f position, Vector3f rotation) {
+    public Camera(Vector3f position, Quaternionf rotation) {
         this.position = position;
         this.rotation = rotation;
     }
@@ -35,7 +35,7 @@ public class Camera {
         position.y += offsetY;
     }
 
-    public Vector3f getRotation() {
+    public Quaternionf getRotation() {
         return rotation;
     }
 
@@ -45,7 +45,8 @@ public class Camera {
         rotation.z = z;
     }
 
-    public void moveRotation(Vector3f cameraRotationIncrement) {
-        rotation.add(cameraRotationIncrement);
+    public void moveRotation(Vector3f rotInc) {
+        rotation.premul(new Quaternionf().rotationX(rotInc.x));
+        rotation.mul(new Quaternionf().rotationY(rotInc.y));
     }
 }

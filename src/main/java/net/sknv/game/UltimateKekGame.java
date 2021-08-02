@@ -11,6 +11,7 @@ import net.sknv.engine.graph.*;
 import net.sknv.engine.physics.PhysicsEngine;
 import net.sknv.engine.physics.colliders.OBB;
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -27,6 +28,7 @@ public class UltimateKekGame implements IGameLogic {
     private static final float FOV = (float) Math.toRadians(60.0f);
     private static final float Z_NEAR = 0.01f;
     private static final float Z_FAR = 1000.f;
+    private static final String FONTFILE = "src/main/resources/fonts/DejaVuSans.ttf";
 
     private static Matrix4f projectionMatrix, viewMatrix, ortho;
     private ArrayList<RayCast> rayCasts = new ArrayList<>();
@@ -52,34 +54,25 @@ public class UltimateKekGame implements IGameLogic {
 
     public UltimateKekGame() {
         renderer = new Renderer();
-        camera = new Camera(new Vector3f(), new Vector3f());
+        camera = new Camera(new Vector3f(), new Quaternionf());
         cameraPosInc = new Vector3f();
         cameraRotInc = new Vector3f();
     }
 
     @Override
     public void init(Window window, MouseInput mouseInput) throws Exception {
-
         renderer.init();
-        setKeyCallbacks(window, mouseInput);
-
         initScene("default");
-
-        Mesh line = MeshUtils.generateLine(WebColor.Red, new Vector3f(0,0,0), new Vector3f(10,10,0));
-        //scene.addGameItem(new Phantom(line));
-
         initPhysicsEngine();
+        initCamera();
+        initHud();
 
-        // Setup HUD
-        hud = new Hud("+");
-
-        //Setup Camera
-        camera.setPosition(0.65f, 1.15f, 4.34f);
+        setKeyCallbacks(window, mouseInput);
+        //glfwSetWindowSizeCallback(window.getWindowHandle(), font::windowSizeChanged);
     }
 
     public void initScene(String scene) {
         try {
-
             if (scene.equals("default")) this.scene = new Scene();
             else {
                 FileInputStream file = new FileInputStream("src/main/resources/scenes/" + scene + ".ser");
@@ -110,6 +103,14 @@ public class UltimateKekGame implements IGameLogic {
                 }
             }
         }
+    }
+
+    private void initCamera() {
+        camera.setPosition(0.65f, 1.15f, 4.34f);
+    }
+
+    private void initHud() throws Exception {
+        hud = new Hud(new TrueType(FONTFILE));
     }
 
     @Override
@@ -266,6 +267,7 @@ public class UltimateKekGame implements IGameLogic {
                 }
                 else if (key == 259) hud.getTerminal().backspace();
                 else if (key == 265) hud.getTerminal().previous();
+                else if (key == 264) hud.getTerminal().recent();
             }
 
             if (key == GLFW_KEY_P && action == GLFW_PRESS && !usingTerminal) {
@@ -312,9 +314,6 @@ public class UltimateKekGame implements IGameLogic {
         String[] in = input.split(" ");
 
         switch (in[0]){
-            case "test":
-                System.out.println("its working :)");
-                break;
             case "savescene":
                 String sceneName;
                 if(in.length>1) sceneName = in[1]; else sceneName = "unnamed";

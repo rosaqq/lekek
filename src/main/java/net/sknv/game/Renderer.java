@@ -30,6 +30,8 @@ public class Renderer {
         setupSceneShader();
         setupHudShader();
         setupSkyBoxShader();
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 
     private void setupSceneShader() throws Exception {

@@ -73,6 +73,17 @@ Everything required to construct a level:
 - `SkyBox`
 - `Lighting`
 
+## Camera
+Camera uses Quaternion rotation (maybe not stonks performance wise?).  
+Key concepts:
+- Yaw is **global**: whatever happens always yaw on global Y Axis.  
+  Apply Yaw before any transformation (Obj Y = Global Y)
+- Pitch is **local**: always pitches up/down from current yaw.  
+  Apply pitch on axis after yaw transformation
+
+Thus, the order is `pitch * this.rotation * yaw`.  
+Conclusion: multiply on the right to apply first.
+
 ## DBZ Collision Engine
 Sorcery fo sure  
 ![I am confuse](https://i.imgur.com/55r5cV1.png)
