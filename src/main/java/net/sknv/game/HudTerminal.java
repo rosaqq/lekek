@@ -1,88 +1,85 @@
 package net.sknv.game;
 
+import net.sknv.engine.entities.HudElement;
 import net.sknv.engine.entities.TextItem;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.*;
 
 public class HudTerminal {
 
+    private List<HudElement> elements;
     private TextItem terminalText;
-    private String stored = "";
-    private String suggestion = "";
+    private TextItem consoleText;
+    private Optional<String> suggestion;
     private LinkedList<String> history = new LinkedList();
     private int historyIndex = -1;
 
-    public HudTerminal(TextItem terminalText) {
-        this.terminalText = terminalText;
+    public HudTerminal(TrueType font) {
+        this.terminalText = new TextItem(Optional.of("/"), font);
+        this.consoleText = new TextItem(Optional.empty(), font);
+        this.suggestion = Optional.empty();
+        this.elements = new ArrayList<>(List.of(terminalText,consoleText));
     }
 
     public TextItem getTextItem() {
         return terminalText;
     }
 
-    public void setText(String text){
+    public void setTerminal(String text){
         terminalText.setText(text);
     }
 
-    public String getText() {
-        return terminalText.getText();
+    public TextItem getConsoleText() {
+        return consoleText;
+    }
+
+    public String getTerminalText() {
+        return terminalText.getText().orElse("");
     }
 
     public void addText(String toAdd) {
-        setText(getText().concat(toAdd));
+        setTerminal(getTerminalText().concat(toAdd));
         suggestCompletion();
-        stored = getText();
     }
 
     public void backspace() {
-        if(getText().length()>1){
-            setText(getText().substring(0,getText().length()-1));
+        if(getTerminalText().length()>1){
+            setTerminal(getTerminalText().substring(0, getTerminalText().length()-1));
             suggestCompletion();
-            stored = getText();
         }
     }
 
     public String enter() {
-        history.push(getText());
+        history.push(getTerminalText());
         historyIndex = -1;
 
-        String enter = getText().substring(1);
-        stored = "";
-        setText("/");
+        String enter = getTerminalText().substring(1);
+        setTerminal("/");
         return enter;
     }
 
-    public void close() {
-        stored = getText();
-        setText("/");
-    }
-
     public void open() {
-        if(!stored.isEmpty()) setText(stored);
-        else setText("/");
-
         suggestCompletion();
     }
 
     public void previous() {
         if(history.size()>0){
             if(++historyIndex>history.size()-1) historyIndex=history.size()-1;
-            setText(history.get(historyIndex));
+            setTerminal(history.get(historyIndex));
         }
     }
 
     public void recent() {
         if(history.size()>0){
             if(--historyIndex<0) historyIndex=0;
-            setText(history.get(historyIndex));
+            setTerminal(history.get(historyIndex));
         }
     }
 
     public void suggestCompletion(){
-        if(!getText().isEmpty() && !getText().equals("/") && !getText().endsWith(" ")){
+        if(!getTerminalText().isEmpty() && !getTerminalText().equals("/") && !getTerminalText().endsWith(" ")){
 
-            String[] parsed = getText().substring(1).split(" ");
+            String[] parsed = getTerminalText().substring(1).split(" ");
             if(parsed.length==0) return;
 
             String toMatch = parsed[parsed.length-1];
@@ -97,5 +94,13 @@ public class HudTerminal {
 
             System.out.println("suggestions ->" + suggestions);
         }
+    }
+
+    public void setConsole(String text) {
+        consoleText.setText(text);
+    }
+
+    public Collection<? extends HudElement> getElements() {
+        return elements;
     }
 }

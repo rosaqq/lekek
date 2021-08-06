@@ -156,9 +156,7 @@ public class TrueType {
                 int cp = pCodePoint.get(0);
                 if (cp == '\n') {
                     if (isLineBBEnabled()) {
-                        glEnd();
                         renderLineBB(text, lineStart, i - 1, y.get(0), scale);
-                        glBegin(GL_QUADS);
                     }
 
                     y.put(0, lineY = y.get(0) + (ascent - descent + lineGap) * scale);

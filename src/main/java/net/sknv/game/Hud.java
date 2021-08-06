@@ -12,6 +12,7 @@ import org.joml.Vector4f;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class Hud implements IHud {
 
@@ -25,9 +26,9 @@ public class Hud implements IHud {
 
     public Hud(TrueType font) throws Exception {
 
-        this.myStatusTextItem = new TextItem("+", font);
+        this.myStatusTextItem = new TextItem(Optional.of("+\n+\n+\n+\n+"), font);
 
-        this.terminal = new HudTerminal(new TextItem("/", font));
+        this.terminal = new HudTerminal(font);
 
         // Create compass
         Mesh mesh = OBJLoader.loadMesh("/models/compass.obj");
@@ -67,10 +68,13 @@ public class Hud implements IHud {
 
     public void updateSize(Window window) {//todo: make this not run every update
         Vector3f dif = myStatusTextItem.getMesh().getMax().sub(myStatusTextItem.getMesh().getMin(), new Vector3f()).div(2f);
-        this.myStatusTextItem.setPosition(window.getCenter().x - dif.x, window.getCenter().y + dif.y, 0);
+        myStatusTextItem.setPosition(window.getCenter().x - dif.x, window.getCenter().y + dif.y - myStatusTextItem.getMesh().getMax().y, 0);
 
-        this.compassItem.setPosition(window.getWidth() - 40f, 50f, 0);
-        this.terminal.getTextItem().setPosition(0f, window.getHeight()-5f, 0);
+        Vector3f consoleSize = terminal.getConsoleText().getMesh().getMax().sub(terminal.getConsoleText().getMesh().getMin(), new Vector3f());
+
+        compassItem.setPosition(window.getWidth() - 40f, 50f, 0f);
+        terminal.getTextItem().setPosition(0f, window.getHeight() - 5f, 0f);
+        terminal.getConsoleText().setPosition(0f,terminal.getTextItem().getPosition().y - consoleSize.y - 5f,0f);
     }
 
     public HudTerminal getTerminal() {
@@ -79,12 +83,11 @@ public class Hud implements IHud {
 
     public void showTerminal() {
         terminal.open();
-        hudElements.add(terminal.getTextItem());
+        hudElements.addAll(terminal.getElements());
     }
 
     public void hideTerminal() {
-        terminal.close();
-        hudElements.remove(terminal.getTextItem());
+        hudElements.removeAll(terminal.getElements());
     }
 
     public void addElement(HudElement myElement) {

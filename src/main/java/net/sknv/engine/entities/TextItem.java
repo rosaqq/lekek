@@ -2,24 +2,27 @@ package net.sknv.engine.entities;
 
 import net.sknv.game.TrueType;
 
+import java.util.Optional;
+
 public class TextItem extends HudElement {
 
     private TrueType font;
-    private String text;
+    private Optional<String> text;
 
-    public TextItem(String text, TrueType font){
+    public TextItem(Optional<String> text, TrueType font){
         super();
-        this.text = text;
         this.font = font;
-        setMesh(font.renderText(text));
+        this.text = text;
+
+        setMesh(font.renderText(text.orElse(" "))); //todo: maybe extend the Optional type to Mesh class? kekw
     }
 
-    public String getText() {
+    public Optional<String> getText() {
         return text;
     }
 
     public void setText(String text) {
-        this.text = text;
+        this.text = Optional.of(text);
         getMesh().deleteBuffers();
         setMesh(font.renderText(text));
     }

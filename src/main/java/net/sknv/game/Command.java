@@ -36,4 +36,9 @@ public enum Command {
     public void setArguments(String[] arguments) {
         this.arguments = arguments;
     }
+
+    @Override
+    public String toString() {
+        return commandName;
+    }
 }

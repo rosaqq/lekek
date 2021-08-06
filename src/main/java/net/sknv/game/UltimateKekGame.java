@@ -380,6 +380,11 @@ public class UltimateKekGame implements IGameLogic {
                     e.printStackTrace();
                 }
                 break;
+            case "help":
+                String output = "";
+                for (Command c : Command.values()) output = output.concat(c.toString() + "\n");
+                hud.getTerminal().setConsole(output);
+                break;
             case "quit":
                 System.exit(0);
                 break;
