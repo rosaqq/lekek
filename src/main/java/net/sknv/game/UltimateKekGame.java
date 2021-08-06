@@ -19,6 +19,7 @@ import java.io.FileInputStream;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.glViewport;
@@ -50,7 +51,7 @@ public class UltimateKekGame implements IGameLogic {
 
     //collisions stuff
     private PhysicsEngine physicsEngine;
-    public Collider selectedItem;
+    public Optional<Collider> selectedItem = Optional.empty();
 
     public UltimateKekGame() {
         renderer = new Renderer();
@@ -140,30 +141,30 @@ public class UltimateKekGame implements IGameLogic {
 
             if (cameraPosInc.length() != 0) cameraPosInc.normalize();
 
-            if(selectedItem!=null) {
+            if(selectedItem.isPresent()) {
                 if (window.isKeyPressed(GLFW_KEY_UP)) {
-                    if (window.isKeyPressed(GLFW_KEY_DOWN)) selectedItem.getVelocity().z = 0f;
-                    else selectedItem.getVelocity().z = -.1f;
-                } else if (window.isKeyPressed(GLFW_KEY_DOWN)) selectedItem.getVelocity().z = .1f;
+                    if (window.isKeyPressed(GLFW_KEY_DOWN)) selectedItem.get().getVelocity().z = 0f;
+                    else selectedItem.get().getVelocity().z = -.1f;
+                } else if (window.isKeyPressed(GLFW_KEY_DOWN)) selectedItem.get().getVelocity().z = .1f;
 
                 if (window.isKeyPressed(GLFW_KEY_LEFT)) {
-                    if (window.isKeyPressed(GLFW_KEY_RIGHT)) selectedItem.getVelocity().x = 0f;
-                    else selectedItem.getVelocity().x = -.1f;
-                } else if (window.isKeyPressed(GLFW_KEY_RIGHT)) selectedItem.getVelocity().x = .1f;
+                    if (window.isKeyPressed(GLFW_KEY_RIGHT)) selectedItem.get().getVelocity().x = 0f;
+                    else selectedItem.get().getVelocity().x = -.1f;
+                } else if (window.isKeyPressed(GLFW_KEY_RIGHT)) selectedItem.get().getVelocity().x = .1f;
 
                 if (window.isKeyPressed(GLFW_KEY_RIGHT_SHIFT)) {
-                    if (window.isKeyPressed(GLFW_KEY_RIGHT_CONTROL)) selectedItem.getVelocity().y = 0f;
-                    else selectedItem.getVelocity().y = .1f;
-                } else if (window.isKeyPressed(GLFW_KEY_RIGHT_CONTROL)) selectedItem.getVelocity().y = -.1f;
+                    if (window.isKeyPressed(GLFW_KEY_RIGHT_CONTROL)) selectedItem.get().getVelocity().y = 0f;
+                    else selectedItem.get().getVelocity().y = .1f;
+                } else if (window.isKeyPressed(GLFW_KEY_RIGHT_CONTROL)) selectedItem.get().getVelocity().y = -.1f;
 
                 if (window.isKeyPressed(GLFW_KEY_X))
-                    selectedItem.rotateEuclidean(new Vector3f((float) (-Math.PI / 200), 0, 0));
+                    selectedItem.get().rotateEuclidean(new Vector3f((float) (-Math.PI / 200), 0, 0));
                 if (window.isKeyPressed(GLFW_KEY_Y))
-                    selectedItem.rotateEuclidean(new Vector3f(0, (float) (-Math.PI / 200), 0));
+                    selectedItem.get().rotateEuclidean(new Vector3f(0, (float) (-Math.PI / 200), 0));
                 if (window.isKeyPressed(GLFW_KEY_Z))
-                    selectedItem.rotateEuclidean(new Vector3f(0, 0, (float) (-Math.PI / 200)));
-                if (window.isKeyPressed(GLFW_KEY_K)) selectedItem.setRotationEuclidean(new Vector3f());
-                if (window.isKeyPressed(GLFW_KEY_J)) selectedItem.rotateWorldEuclidean(new Vector3f(0, (float)Math.PI/200, 0));
+                    selectedItem.get().rotateEuclidean(new Vector3f(0, 0, (float) (-Math.PI / 200)));
+                if (window.isKeyPressed(GLFW_KEY_K)) selectedItem.get().setRotationEuclidean(new Vector3f());
+                if (window.isKeyPressed(GLFW_KEY_J)) selectedItem.get().rotateWorldEuclidean(new Vector3f(0, (float)Math.PI/200, 0));
             }
         }
 
@@ -187,18 +188,18 @@ public class UltimateKekGame implements IGameLogic {
             }
         }
 
-        if(selectedItem != null) selectedItem.drawBB(WebColor.Green);
+        selectedItem.ifPresent( x -> x.drawBB(WebColor.Green));
 
         if(!clickedItems.isEmpty()) {
             float d = cameraPos.distance(clickedItems.get(0).getPosition());
             for (Collider item : clickedItems) {
                 if (cameraPos.distance(item.getPosition()) <= d){
                     d = cameraPos.distance(item.getPosition());
-                    selectedItem = item;
+                    selectedItem = Optional.of(item);
                 }
                 item.drawBB(WebColor.Yellow);
             }
-            selectedItem.drawBB(WebColor.Red);
+            selectedItem.ifPresent(x -> x.drawBB(WebColor.Red));
         }
 
     }
@@ -261,10 +262,7 @@ public class UltimateKekGame implements IGameLogic {
                 if(key>=48 && key<=90){
                     hud.getTerminal().addText(String.valueOf((char)Character.toLowerCase(key)));
                 } else if (key == 32) hud.getTerminal().addText(" ");
-                else if (key == 257) {
-                    processTerminal(hud.getTerminal().enter());
-                    closeHudTerminal(mouseInput, windowHandle);
-                }
+                else if (key == 257) processTerminal(hud.getTerminal().enter());
                 else if (key == 259) hud.getTerminal().backspace();
                 else if (key == 265) hud.getTerminal().previous();
                 else if (key == 264) hud.getTerminal().recent();
@@ -330,10 +328,20 @@ public class UltimateKekGame implements IGameLogic {
                 scene.removeAllItems();
                 break;
             case "removeitem":
-                scene.removeItem(selectedItem);
+                selectedItem.ifPresentOrElse(
+                    x -> {
+                        scene.removeItem(x);
+                        selectedItem = Optional.empty();
+                        },
+                    () -> System.out.println("No item selected"));
                 break;
             case "rotateitem":
-                if(in.length==4) selectedItem.rotateEuclidean(new Vector3f(Float.parseFloat(in[1]), Float.parseFloat(in[2]), Float.parseFloat(in[3])));
+                if(in.length==4){
+                    selectedItem.ifPresentOrElse(
+                        x -> x.rotateEuclidean(new Vector3f(Float.parseFloat(in[1]), Float.parseFloat(in[2]), Float.parseFloat(in[3]))),
+                        () -> System.out.println("No item selected")
+                    );
+                } else System.out.println("invalid syntax");
                 break;
             case "additem":
                 try {

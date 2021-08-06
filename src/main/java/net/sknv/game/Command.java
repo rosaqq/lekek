@@ -7,7 +7,8 @@ public enum Command {
     REMOVEITEM("removeitem"),
     ROTATEITEM("rotateitem"),
     ADDITEM("additem"),
-    ADDCUBES("addcubes");
+    ADDCUBES("addcubes"),
+    HELP("help");
 
     private String commandName;
     private String[] arguments;
