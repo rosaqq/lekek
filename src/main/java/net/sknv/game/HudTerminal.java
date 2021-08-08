@@ -15,8 +15,8 @@ public class HudTerminal {
     private int historyIndex = -1;
 
     public HudTerminal(TrueType font) {
-        this.terminalText = new TextItem(Optional.of("/"), font);
-        this.consoleText = new TextItem(Optional.empty(), font);
+        this.terminalText = new TextItem(font, Optional.of("/"));
+        this.consoleText = new TextItem(font, Optional.empty());
         this.suggestion = Optional.empty();
         this.elements = new ArrayList<>(List.of(terminalText,consoleText));
     }
@@ -102,5 +102,9 @@ public class HudTerminal {
 
     public Collection<? extends HudElement> getElements() {
         return elements;
+    }
+
+    public void addConsoleText(String text) {
+        consoleText.addText(text);
     }
 }

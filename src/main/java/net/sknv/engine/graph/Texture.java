@@ -75,7 +75,7 @@ public class Texture {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, bitmap);
 
-        int swizzleMask[] = {GL_ZERO, GL_ZERO, GL_ZERO, GL_RED};
+        int swizzleMask[] = {GL_RED, GL_RED, GL_RED, GL_RED};
         glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
     }
 

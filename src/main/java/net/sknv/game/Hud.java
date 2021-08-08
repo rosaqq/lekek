@@ -26,7 +26,7 @@ public class Hud implements IHud {
 
     public Hud(TrueType font) throws Exception {
 
-        this.myStatusTextItem = new TextItem(Optional.of("+"), font);
+        this.myStatusTextItem = new TextItem(font, Optional.of("+"));
 
         this.terminal = new HudTerminal(font);
 

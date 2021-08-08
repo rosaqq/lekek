@@ -72,17 +72,18 @@ public class UltimateKekGame implements IGameLogic {
         //glfwSetWindowSizeCallback(window.getWindowHandle(), font::windowSizeChanged);
     }
 
-    public void initScene(String scene) {
+    public boolean initScene(String scene) {
         try {
             if (scene.equals("default")) this.scene = new Scene();
             else {
                 FileInputStream file = new FileInputStream("src/main/resources/scenes/" + scene + ".ser");
                 this.scene = (Scene) new ObjectInputStream(file).readObject();
             }
-
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
+        return true;
     }
 
     public void initPhysicsEngine() {
@@ -318,11 +319,14 @@ public class UltimateKekGame implements IGameLogic {
                 getScene().save(sceneName);
                 break;
             case "loadscene":
-                if(in.length>1) sceneName = in[1]; else return;
-                System.out.println("loading scene - " + sceneName);
-                initScene(sceneName);
-                initPhysicsEngine();
-                System.out.println("scene loaded");
+                if(in.length==2) sceneName = in[1]; else {
+                    this.getHud().getTerminal().addConsoleText("invalid syntax");
+                    return;
+                }
+                if (initScene(sceneName)){
+                    this.getHud().getTerminal().addConsoleText("scene loaded - " + sceneName);
+                    initPhysicsEngine();
+                } else this.getHud().getTerminal().addConsoleText("scene load failed");
                 break;
             case "clearitems":
                 scene.removeAllItems();
@@ -389,9 +393,9 @@ public class UltimateKekGame implements IGameLogic {
                 }
                 break;
             case "help":
-                String output = "";
-                for (Command c : Command.values()) output = output.concat(c.toString() + "\n");
-                hud.getTerminal().setConsole(output);
+                String output = "List of commands:";
+                for (Command c : Command.values()) output = output.concat("\n" + c.toString());
+                hud.getTerminal().addConsoleText(output);
                 break;
             case "quit":
                 System.exit(0);
