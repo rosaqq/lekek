@@ -19,7 +19,7 @@ import static org.lwjgl.opengl.GL30.glBindVertexArray;
 public class Collider extends Phantom {
 
     //computed
-    protected Vector3f force, toque;
+    protected Vector3f force, torque;
 
     //constant vars
     protected Matrix3f IBody, IBodyInv; //momento inercia
