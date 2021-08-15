@@ -159,4 +159,8 @@ public class Collider extends Phantom {
                 "boundingBox=" + boundingBox +
                 '}';
     }
+
+    public void applyForce(Vector3f force) {
+        this.force.add(force);
+    }
 }

@@ -143,15 +143,11 @@ public class UltimateKekGame implements IGameLogic {
             if (cameraPosInc.length() != 0) cameraPosInc.normalize();
 
             if(selectedItem.isPresent()) {
-                if (window.isKeyPressed(GLFW_KEY_UP)) {
-                    if (window.isKeyPressed(GLFW_KEY_DOWN)) selectedItem.get().getVelocity().z = 0f;
-                    else selectedItem.get().getVelocity().z = -.1f;
-                } else if (window.isKeyPressed(GLFW_KEY_DOWN)) selectedItem.get().getVelocity().z = .1f;
+                if (window.isKeyPressed(GLFW_KEY_UP)) selectedItem.get().applyForce(new Vector3f(0,0,.1f));
+                if (window.isKeyPressed(GLFW_KEY_DOWN)) selectedItem.get().applyForce(new Vector3f(0,0,-.1f));
 
-                if (window.isKeyPressed(GLFW_KEY_LEFT)) {
-                    if (window.isKeyPressed(GLFW_KEY_RIGHT)) selectedItem.get().getVelocity().x = 0f;
-                    else selectedItem.get().getVelocity().x = -.1f;
-                } else if (window.isKeyPressed(GLFW_KEY_RIGHT)) selectedItem.get().getVelocity().x = .1f;
+                if (window.isKeyPressed(GLFW_KEY_RIGHT)) selectedItem.get().applyForce(new Vector3f(.1f,0,0));
+                if (window.isKeyPressed(GLFW_KEY_LEFT)) selectedItem.get().applyForce(new Vector3f(-.1f,0,0));
 
                 if (window.isKeyPressed(GLFW_KEY_RIGHT_SHIFT)) {
                     if (window.isKeyPressed(GLFW_KEY_RIGHT_CONTROL)) selectedItem.get().getVelocity().y = 0f;
@@ -189,7 +185,7 @@ public class UltimateKekGame implements IGameLogic {
             }
         }
 
-        selectedItem.ifPresent( x -> x.drawBB(WebColor.Green));
+        selectedItem.ifPresent( x -> x.setBbColor(WebColor.Green));
 
         if(!clickedItems.isEmpty()) {
             float d = cameraPos.distance(clickedItems.get(0).getPosition());
@@ -198,9 +194,9 @@ public class UltimateKekGame implements IGameLogic {
                     d = cameraPos.distance(item.getPosition());
                     selectedItem = Optional.of(item);
                 }
-                item.drawBB(WebColor.Yellow);
+                item.setBbColor(WebColor.Yellow);
             }
-            selectedItem.ifPresent(x -> x.drawBB(WebColor.Red));
+            selectedItem.ifPresent(x -> x.setBbColor(WebColor.Red));
         }
 
     }
