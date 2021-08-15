@@ -46,8 +46,12 @@ public class Collider extends Phantom {
         isStatic = false;
         mass = 1;
         velocity = new Vector3f();
+
+        R = new Matrix3f();
+        P = velocity.mul(mass, new Vector3f());
         //IBody = ?;
         //IBody.invert(IBodyInv);
+        L = new Vector3f();
     }
 
     public Vector3f getLinearMomentum(){
@@ -63,7 +67,7 @@ public class Collider extends Phantom {
     }
 
     public Vector3f getVelocity(){
-        return velocity;
+        return P.div(mass, new Vector3f());
     }
 
     @Override
