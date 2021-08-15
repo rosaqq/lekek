@@ -6,10 +6,7 @@ import net.sknv.engine.graph.ShaderProgram;
 import net.sknv.engine.graph.WebColor;
 import net.sknv.engine.physics.colliders.BoundingBox;
 import net.sknv.engine.physics.colliders.OBB;
-import org.joml.Matrix3f;
-import org.joml.Matrix4f;
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
+import org.joml.*;
 
 import java.io.ObjectInputStream;
 import java.util.Optional;
@@ -20,7 +17,7 @@ import static org.lwjgl.opengl.GL30.glBindVertexArray;
 public class Collider extends Phantom {
 
     //computed
-    protected Vector3f force, torque;
+    protected Vector3f F, T; //force, torque
 
     //constant vars
     protected Matrix3f IBody, IBodyInv; //momento inercia
@@ -52,6 +49,31 @@ public class Collider extends Phantom {
         //IBody = ?;
         //IBody.invert(IBodyInv);
         L = new Vector3f();
+
+        F = new Vector3f();
+        T = new Vector3f();
+    }
+
+    @Override
+    public void setRotation(Quaternionf rotation) {
+        // calculates diff
+        Quaternionf diff = new Quaternionf(getRotation());
+        diff.difference(rotation);
+        this.boundingBox.rotate(diff);
+
+        super.setRotation(rotation);
+    }
+
+    @Override
+    public void setPosition(Vector3f position) {
+        super.setPosition(position);
+        setBoundingBox(new OBB(this));
+    }
+
+    @Override
+    public void rotate(Quaternionf rotation) {
+        super.rotate(rotation);
+        this.boundingBox.rotate(rotation);
     }
 
     public Vector3f getLinearMomentum(){
@@ -66,24 +88,12 @@ public class Collider extends Phantom {
         return R;
     }
 
+    public Vector3fc getF() {
+        return F;
+    }
+
     public Vector3f getVelocity(){
         return P.div(mass, new Vector3f());
-    }
-
-    @Override
-    public void setRotation(Quaternionf rotation) {
-        // calculates diff
-        Quaternionf diff = new Quaternionf(getRotation());
-        diff.difference(rotation);
-        this.boundingBox.rotate(diff);
-
-        super.setRotation(rotation);
-    }
-
-    @Override
-    public void rotate(Quaternionf rotation) {
-        super.rotate(rotation);
-        this.boundingBox.rotate(rotation);
     }
 
     private void readObject(ObjectInputStream inputStream) throws Exception {
@@ -97,28 +107,6 @@ public class Collider extends Phantom {
     public void translate(Vector3f step) {
         super.translate(step);
         this.boundingBox.translate(step);
-    }
-
-    @Override
-    public void setPosition(Vector3f position) {
-        super.setPosition(position);
-        setBoundingBox(new OBB(this));
-    }
-
-    public void setBoundingBox(BoundingBox boundingBox) {
-        this.boundingBox = boundingBox;
-    }
-
-    public BoundingBox getBoundingBox() {
-        return boundingBox;
-    }
-
-    public boolean isStatic() {
-        return isStatic;
-    }
-
-    public float getMass() {
-        return mass;
     }
 
     @Override
@@ -149,6 +137,30 @@ public class Collider extends Phantom {
         );
     }
 
+    public void setLinearMomentum(Vector3f p) {
+        this.P = p;
+    }
+
+    public void setBoundingBox(BoundingBox boundingBox) {
+        this.boundingBox = boundingBox;
+    }
+
+    public BoundingBox getBoundingBox() {
+        return boundingBox;
+    }
+
+    public boolean isStatic() {
+        return isStatic;
+    }
+
+    public float getMass() {
+        return mass;
+    }
+
+    public void applyForce(Vector3f force) {
+        this.F.add(force);
+    }
+
     public void setBbColor(WebColor color) {
         this.showBB = Optional.of(color);
     }
@@ -158,9 +170,5 @@ public class Collider extends Phantom {
         return "Collider{" +
                 "boundingBox=" + boundingBox +
                 '}';
-    }
-
-    public void applyForce(Vector3f force) {
-        this.force.add(force);
     }
 }

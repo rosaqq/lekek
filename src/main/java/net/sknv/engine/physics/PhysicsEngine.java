@@ -25,19 +25,21 @@ public class PhysicsEngine {
 
     public void simulate(Scene scene){
         ArrayList<Collider> colliders = scene.getColliders();
-        applyForces(colliders);
-        //update();
+        updateState(colliders);
         //detectCollisions(gameItems);
         //solveCollisions();
     }
 
-    private void applyForces(Collection< ? extends Collider> colliders) {
+    private void updateState(Collection< ? extends Collider> colliders) {
         Vector3f velocity;
         for (Collider collider : colliders){
             velocity = collider.getVelocity();
 
 
             collider.setPosition(collider.getPosition().add(velocity));
+            //r = r + w
+            collider.setLinearMomentum(collider.getLinearMomentum().add(collider.getF()));
+
         }
     }
 
