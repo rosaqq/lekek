@@ -187,7 +187,7 @@ public class UltimateKekGame implements IGameLogic {
             }
         }
 
-        if(selectedItem != null) selectedItem.drawBB(WebColor.Green);
+        if(selectedItem != null) selectedItem.setBbColor(WebColor.Green);
 
         if(!clickedItems.isEmpty()) {
             float d = cameraPos.distance(clickedItems.get(0).getPosition());
@@ -196,9 +196,9 @@ public class UltimateKekGame implements IGameLogic {
                     d = cameraPos.distance(item.getPosition());
                     selectedItem = item;
                 }
-                item.drawBB(WebColor.Yellow);
+                item.setBbColor(WebColor.Yellow);
             }
-            selectedItem.drawBB(WebColor.Red);
+            selectedItem.setBbColor(WebColor.Red);
         }
 
     }
