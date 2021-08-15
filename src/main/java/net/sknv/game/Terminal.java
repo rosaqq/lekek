@@ -2,11 +2,15 @@ package net.sknv.game;
 
 import java.util.Scanner;
 
-public class Terminal extends Thread{
+public class Terminal extends Thread {
 
     private String input = null;
 
     public Terminal(){}
+
+    private synchronized void setInput(String input){
+        this.input = input;
+    }
 
     public void run(){
         Scanner s = new Scanner(System.in);
@@ -26,9 +30,5 @@ public class Terminal extends Thread{
             input = null;
             return temp;
         }
-    }
-
-    private synchronized void setInput(String input){
-        this.input = input;
     }
 }

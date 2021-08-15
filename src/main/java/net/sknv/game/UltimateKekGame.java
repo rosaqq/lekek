@@ -19,6 +19,7 @@ import java.io.FileInputStream;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.glViewport;
@@ -28,6 +29,7 @@ public class UltimateKekGame implements IGameLogic {
     private static final float FOV = (float) Math.toRadians(60.0f);
     private static final float Z_NEAR = 0.01f;
     private static final float Z_FAR = 1000.f;
+    private static final String FONTFILE = "src/main/resources/fonts/DejaVuSans.ttf";
 
     private static Matrix4f projectionMatrix, viewMatrix, ortho;
     private ArrayList<RayCast> rayCasts = new ArrayList<>();
@@ -49,7 +51,7 @@ public class UltimateKekGame implements IGameLogic {
 
     //collisions stuff
     private PhysicsEngine physicsEngine;
-    public Collider selectedItem;
+    public Optional<Collider> selectedItem = Optional.empty();
 
     public UltimateKekGame() {
         renderer = new Renderer();
@@ -60,36 +62,28 @@ public class UltimateKekGame implements IGameLogic {
 
     @Override
     public void init(Window window, MouseInput mouseInput) throws Exception {
-
         renderer.init();
-        setKeyCallbacks(window, mouseInput);
-
         initScene("default");
-
-        Mesh line = MeshUtils.generateLine(WebColor.Red, new Vector3f(0,0,0), new Vector3f(10,10,0));
-        //scene.addGameItem(new Phantom(line));
-
         initPhysicsEngine();
+        initCamera();
+        initHud();
 
-        // Setup HUD
-        hud = new Hud("+");
-
-        //Setup Camera
-        camera.setPosition(0.65f, 1.15f, 4.34f);
+        setKeyCallbacks(window, mouseInput);
+        //glfwSetWindowSizeCallback(window.getWindowHandle(), font::windowSizeChanged);
     }
 
-    public void initScene(String scene) {
+    public boolean initScene(String scene) {
         try {
-
             if (scene.equals("default")) this.scene = new Scene();
             else {
                 FileInputStream file = new FileInputStream("src/main/resources/scenes/" + scene + ".ser");
                 this.scene = (Scene) new ObjectInputStream(file).readObject();
             }
-
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
+        return true;
     }
 
     public void initPhysicsEngine() {
@@ -111,6 +105,14 @@ public class UltimateKekGame implements IGameLogic {
                 }
             }
         }
+    }
+
+    private void initCamera() {
+        camera.setPosition(0.65f, 1.15f, 4.34f);
+    }
+
+    private void initHud() throws Exception {
+        hud = new Hud(new TrueType(FONTFILE));
     }
 
     @Override
@@ -140,30 +142,30 @@ public class UltimateKekGame implements IGameLogic {
 
             if (cameraPosInc.length() != 0) cameraPosInc.normalize();
 
-            if(selectedItem!=null) {
+            if(selectedItem.isPresent()) {
                 if (window.isKeyPressed(GLFW_KEY_UP)) {
-                    if (window.isKeyPressed(GLFW_KEY_DOWN)) selectedItem.getVelocity().z = 0f;
-                    else selectedItem.getVelocity().z = -.1f;
-                } else if (window.isKeyPressed(GLFW_KEY_DOWN)) selectedItem.getVelocity().z = .1f;
+                    if (window.isKeyPressed(GLFW_KEY_DOWN)) selectedItem.get().getVelocity().z = 0f;
+                    else selectedItem.get().getVelocity().z = -.1f;
+                } else if (window.isKeyPressed(GLFW_KEY_DOWN)) selectedItem.get().getVelocity().z = .1f;
 
                 if (window.isKeyPressed(GLFW_KEY_LEFT)) {
-                    if (window.isKeyPressed(GLFW_KEY_RIGHT)) selectedItem.getVelocity().x = 0f;
-                    else selectedItem.getVelocity().x = -.1f;
-                } else if (window.isKeyPressed(GLFW_KEY_RIGHT)) selectedItem.getVelocity().x = .1f;
+                    if (window.isKeyPressed(GLFW_KEY_RIGHT)) selectedItem.get().getVelocity().x = 0f;
+                    else selectedItem.get().getVelocity().x = -.1f;
+                } else if (window.isKeyPressed(GLFW_KEY_RIGHT)) selectedItem.get().getVelocity().x = .1f;
 
                 if (window.isKeyPressed(GLFW_KEY_RIGHT_SHIFT)) {
-                    if (window.isKeyPressed(GLFW_KEY_RIGHT_CONTROL)) selectedItem.getVelocity().y = 0f;
-                    else selectedItem.getVelocity().y = .1f;
-                } else if (window.isKeyPressed(GLFW_KEY_RIGHT_CONTROL)) selectedItem.getVelocity().y = -.1f;
+                    if (window.isKeyPressed(GLFW_KEY_RIGHT_CONTROL)) selectedItem.get().getVelocity().y = 0f;
+                    else selectedItem.get().getVelocity().y = .1f;
+                } else if (window.isKeyPressed(GLFW_KEY_RIGHT_CONTROL)) selectedItem.get().getVelocity().y = -.1f;
 
                 if (window.isKeyPressed(GLFW_KEY_X))
-                    selectedItem.rotateEuclidean(new Vector3f((float) (-Math.PI / 200), 0, 0));
+                    selectedItem.get().rotateEuclidean(new Vector3f((float) (-Math.PI / 200), 0, 0));
                 if (window.isKeyPressed(GLFW_KEY_Y))
-                    selectedItem.rotateEuclidean(new Vector3f(0, (float) (-Math.PI / 200), 0));
+                    selectedItem.get().rotateEuclidean(new Vector3f(0, (float) (-Math.PI / 200), 0));
                 if (window.isKeyPressed(GLFW_KEY_Z))
-                    selectedItem.rotateEuclidean(new Vector3f(0, 0, (float) (-Math.PI / 200)));
-                if (window.isKeyPressed(GLFW_KEY_K)) selectedItem.setRotationEuclidean(new Vector3f());
-                if (window.isKeyPressed(GLFW_KEY_J)) selectedItem.rotateWorldEuclidean(new Vector3f(0, (float)Math.PI/200, 0));
+                    selectedItem.get().rotateEuclidean(new Vector3f(0, 0, (float) (-Math.PI / 200)));
+                if (window.isKeyPressed(GLFW_KEY_K)) selectedItem.get().setRotationEuclidean(new Vector3f());
+                if (window.isKeyPressed(GLFW_KEY_J)) selectedItem.get().rotateWorldEuclidean(new Vector3f(0, (float)Math.PI/200, 0));
             }
         }
 
@@ -187,18 +189,18 @@ public class UltimateKekGame implements IGameLogic {
             }
         }
 
-        if(selectedItem != null) selectedItem.setBbColor(WebColor.Green);
+        selectedItem.ifPresent( x -> x.drawBB(WebColor.Green));
 
         if(!clickedItems.isEmpty()) {
             float d = cameraPos.distance(clickedItems.get(0).getPosition());
             for (Collider item : clickedItems) {
                 if (cameraPos.distance(item.getPosition()) <= d){
                     d = cameraPos.distance(item.getPosition());
-                    selectedItem = item;
+                    selectedItem = Optional.of(item);
                 }
-                item.setBbColor(WebColor.Yellow);
+                item.drawBB(WebColor.Yellow);
             }
-            selectedItem.setBbColor(WebColor.Red);
+            selectedItem.ifPresent(x -> x.drawBB(WebColor.Red));
         }
 
     }
@@ -261,12 +263,10 @@ public class UltimateKekGame implements IGameLogic {
                 if(key>=48 && key<=90){
                     hud.getTerminal().addText(String.valueOf((char)Character.toLowerCase(key)));
                 } else if (key == 32) hud.getTerminal().addText(" ");
-                else if (key == 257) {
-                    processTerminal(hud.getTerminal().enter());
-                    closeHudTerminal(mouseInput, windowHandle);
-                }
+                else if (key == 257) processTerminal(hud.getTerminal().enter());
                 else if (key == 259) hud.getTerminal().backspace();
                 else if (key == 265) hud.getTerminal().previous();
+                else if (key == 264) hud.getTerminal().recent();
             }
 
             if (key == GLFW_KEY_P && action == GLFW_PRESS && !usingTerminal) {
@@ -313,29 +313,39 @@ public class UltimateKekGame implements IGameLogic {
         String[] in = input.split(" ");
 
         switch (in[0]){
-            case "test":
-                System.out.println("its working :)");
-                break;
             case "savescene":
                 String sceneName;
                 if(in.length>1) sceneName = in[1]; else sceneName = "unnamed";
                 getScene().save(sceneName);
                 break;
             case "loadscene":
-                if(in.length>1) sceneName = in[1]; else return;
-                System.out.println("loading scene - " + sceneName);
-                initScene(sceneName);
-                initPhysicsEngine();
-                System.out.println("scene loaded");
+                if(in.length==2) sceneName = in[1]; else {
+                    this.getHud().getTerminal().addConsoleText("invalid syntax");
+                    return;
+                }
+                if (initScene(sceneName)){
+                    this.getHud().getTerminal().addConsoleText("scene loaded - " + sceneName);
+                    initPhysicsEngine();
+                } else this.getHud().getTerminal().addConsoleText("scene load failed");
                 break;
             case "clearitems":
                 scene.removeAllItems();
                 break;
             case "removeitem":
-                scene.removeItem(selectedItem);
+                selectedItem.ifPresentOrElse(
+                    x -> {
+                        scene.removeItem(x);
+                        selectedItem = Optional.empty();
+                        },
+                    () -> System.out.println("No item selected"));
                 break;
             case "rotateitem":
-                if(in.length==4) selectedItem.rotateEuclidean(new Vector3f(Float.parseFloat(in[1]), Float.parseFloat(in[2]), Float.parseFloat(in[3])));
+                if(in.length==4){
+                    selectedItem.ifPresentOrElse(
+                        x -> x.rotateEuclidean(new Vector3f(Float.parseFloat(in[1]), Float.parseFloat(in[2]), Float.parseFloat(in[3]))),
+                        () -> System.out.println("No item selected")
+                    );
+                } else System.out.println("invalid syntax");
                 break;
             case "additem":
                 try {
@@ -381,6 +391,11 @@ public class UltimateKekGame implements IGameLogic {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                break;
+            case "help":
+                String output = "List of commands:";
+                for (Command c : Command.values()) output = output.concat("\n" + c.toString());
+                hud.getTerminal().addConsoleText(output);
                 break;
             case "quit":
                 System.exit(0);
