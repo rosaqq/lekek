@@ -401,6 +401,7 @@ public class UltimateKekGame implements IGameLogic {
                 System.exit(0);
                 break;
             default:
+                hud.getTerminal().addConsoleText(input);
                 break;
         }
     }
