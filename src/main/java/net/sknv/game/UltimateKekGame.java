@@ -143,11 +143,11 @@ public class UltimateKekGame implements IGameLogic {
             if (cameraPosInc.length() != 0) cameraPosInc.normalize();
 
             if(selectedItem.isPresent()) {
-                if (window.isKeyPressed(GLFW_KEY_UP)) selectedItem.get().applyForce(new Vector3f(0,0,-.1f));
-                if (window.isKeyPressed(GLFW_KEY_DOWN)) selectedItem.get().applyForce(new Vector3f(0,0,.1f));
+                if (window.isKeyPressed(GLFW_KEY_UP)) selectedItem.get().getPosition().add(new Vector3f(0,0,-.1f));
+                if (window.isKeyPressed(GLFW_KEY_DOWN)) selectedItem.get().getPosition().add(new Vector3f(0,0,.1f));
 
-                if (window.isKeyPressed(GLFW_KEY_RIGHT)) selectedItem.get().applyForce(new Vector3f(.1f,0,0));
-                if (window.isKeyPressed(GLFW_KEY_LEFT)) selectedItem.get().applyForce(new Vector3f(-.1f,0,0));
+                if (window.isKeyPressed(GLFW_KEY_RIGHT)) selectedItem.get().getPosition().add(new Vector3f(.1f,0,0));
+                if (window.isKeyPressed(GLFW_KEY_LEFT)) selectedItem.get().getPosition().add(new Vector3f(-.1f,0,0));
 
                 if (window.isKeyPressed(GLFW_KEY_RIGHT_SHIFT)) {
                     if (window.isKeyPressed(GLFW_KEY_RIGHT_CONTROL)) selectedItem.get().getVelocity().y = 0f;
