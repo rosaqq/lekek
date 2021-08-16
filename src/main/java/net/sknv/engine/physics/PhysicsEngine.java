@@ -41,10 +41,10 @@ public class PhysicsEngine {
             velocity = collider.getVelocity();
 
             Iinv = collider.getR().mul(collider.getIBodyInv(), new Matrix3f()).mul(collider.getR().transpose(new Matrix3f()));
-            Iinv.transform(collider.getAngularMomentum(), angularVel); //prob wrong
+            collider.getAngularMomentum().mul(Iinv, angularVel); //maybe wrong
 
             collider.setPosition(collider.getPosition().add(velocity)); // x = x + v
-            collider.setRotation(collider.getRotation().mul(new Quaternionf(0, angularVel.x, angularVel.y, angularVel.z), new Quaternionf()).scale(1/2)); //q = q + 1/2*w*q (?)
+            collider.rotate(new Quaternionf(angularVel.x, angularVel.y, angularVel.z,1).normalize().mul(collider.getRotation())); //q' = 1/2*w*q maybe wrong
             collider.setLinearMomentum(collider.getLinearMomentum().add(collider.getF())); //p = p + f
             collider.setAngularMomentum(collider.getAngularMomentum().add(collider.getT())); //l = l + t
         }

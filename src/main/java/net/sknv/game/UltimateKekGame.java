@@ -256,7 +256,7 @@ public class UltimateKekGame implements IGameLogic {
     private void setKeyCallbacks(Window window, MouseInput mouseInput) {
         window.setKeyCallback((windowHandle, key, scancode, action, mods) -> {
             if (usingTerminal && (action == GLFW_PRESS || action == GLFW_REPEAT)){ //using hud terminal
-                if(key>=48 && key<=90){
+                if(key>=44 && key<=90){
                     hud.getTerminal().addText(String.valueOf((char)Character.toLowerCase(key)));
                 } else if (key == 32) hud.getTerminal().addText(" ");
                 else if (key == 257) processTerminal(hud.getTerminal().enter());
@@ -338,7 +338,8 @@ public class UltimateKekGame implements IGameLogic {
             case "rotateitem":
                 if(in.length==4){
                     selectedItem.ifPresentOrElse(
-                        x -> x.rotateEuclidean(new Vector3f(Float.parseFloat(in[1]), Float.parseFloat(in[2]), Float.parseFloat(in[3]))),
+                        //x -> x.rotateEuclidean(new Vector3f(Float.parseFloat(in[1]), Float.parseFloat(in[2]), Float.parseFloat(in[3]))), testing
+                        x -> x.setAngularMomentum(new Vector3f(Float.parseFloat(in[1]), Float.parseFloat(in[2]), Float.parseFloat(in[3]))),
                         () -> System.out.println("No item selected")
                     );
                 } else System.out.println("invalid syntax");
