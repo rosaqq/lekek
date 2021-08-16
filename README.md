@@ -1,7 +1,6 @@
 ![Requires Java 11+](https://img.shields.io/badge/Java-11%2B-blue)
 # LWJGL project
-- Wannabe Game Engine
-- Wannabe Multiplayer Game
+- For Fun Game Engine
 
 ## Core ideas to implement
 - Logically organised render engine
@@ -9,7 +8,7 @@
 - Multiplayer
 - Terrain
 
-## Sorta abstract road map
+## Road map
 
 - [ ] Working collisions
 - [ ] Player Character
@@ -24,19 +23,22 @@ Inside project folder open cmd and do:
 `./gradlew run` to run on linux  
 `gradlew.bat run` to run on windows
 
-wow such gradle many amaze
+## Controls
+`a w s d` to move  
+`space/shift` for up/down  
+`mouse` to look around  
 
-## (Probably outdated) controls
-`a w s d` to move
-`space shift` for up/down
-`mouse` to look around
+`t/Esc` to open/close command line  
+`/help` to show commands  
 
-`t` to open command line
-`left click` to select gameItem
+`left click` to select an item  
+`right click` to cast a "ray"  
 
-`arrow keys` to move selected item
-`x y z` to rotate selected item
-`j` to rotate selected item in world Y axis
+
+`arrow keys` to move selected item  
+`x y z` to rotate selected item aroud its x/y/z axis  
+`j` to rotate selected item in world Y axis  
+`k` to reset selected item rotation  
 
 press power button to paint screen black
 
@@ -74,7 +76,7 @@ Everything required to construct a level:
 - `Lighting`
 
 ## Camera
-Camera uses Quaternion rotation (maybe not stonks performance wise?).  
+Camera uses Quaternion rotation (maybe not worth performance wise?).  
 Key concepts:
 - Yaw is **global**: whatever happens always yaw on global Y Axis.  
   Apply Yaw before any transformation (Obj Y = Global Y)
@@ -84,6 +86,5 @@ Key concepts:
 Thus, the order is `pitch * this.rotation * yaw`.  
 Conclusion: multiply on the right to apply first.
 
-## DBZ Collision Engine
-Sorcery fo sure  
-![I am confuse](https://i.imgur.com/55r5cV1.png)
+## Collisions
+Currently WIP
