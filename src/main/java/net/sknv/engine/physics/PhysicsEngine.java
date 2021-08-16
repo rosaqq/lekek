@@ -4,6 +4,8 @@ import net.sknv.engine.Scene;
 import net.sknv.engine.entities.Collider;
 import net.sknv.engine.physics.colliders.BoundingBox;
 import net.sknv.engine.physics.collisionDetection.SPCollision;
+import org.joml.Matrix3f;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
@@ -32,14 +34,19 @@ public class PhysicsEngine {
 
     private void updateState(Collection< ? extends Collider> colliders) {
         Vector3f velocity;
+        Matrix3f Iinv;
+        Vector3f angularVel = new Vector3f();
+
         for (Collider collider : colliders){
             velocity = collider.getVelocity();
 
+            Iinv = collider.getR().mul(collider.getIBodyInv(), new Matrix3f()).mul(collider.getR().transpose(new Matrix3f()));
+            Iinv.transform(collider.getAngularMomentum(), angularVel); //prob wrong
 
-            collider.setPosition(collider.getPosition().add(velocity));
-            //r = r + w
-            collider.setLinearMomentum(collider.getLinearMomentum().add(collider.getF()));
-
+            collider.setPosition(collider.getPosition().add(velocity)); // x = x + v
+            collider.setRotation(collider.getRotation().mul(new Quaternionf(0, angularVel.x, angularVel.y, angularVel.z), new Quaternionf()).scale(1/2)); //q = q + 1/2*w*q (?)
+            collider.setLinearMomentum(collider.getLinearMomentum().add(collider.getF())); //p = p + f
+            collider.setAngularMomentum(collider.getAngularMomentum().add(collider.getT())); //l = l + t
         }
     }
 

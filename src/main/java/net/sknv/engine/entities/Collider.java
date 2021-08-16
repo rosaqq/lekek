@@ -41,9 +41,10 @@ public class Collider extends Phantom {
         super(mesh);
         boundingBox = new OBB(this);
         isStatic = false;
-        mass = 1;
-        velocity = new Vector3f();
 
+        mass = 1;
+
+        velocity = new Vector3f();
         R = new Matrix3f();
         P = velocity.mul(mass, new Vector3f());
         //IBody = ?;
@@ -52,6 +53,20 @@ public class Collider extends Phantom {
 
         F = new Vector3f();
         T = new Vector3f();
+
+        //calculate inertia tensor of a block of size (x,y,z) and constant density
+        float x = boundingBox.getMax().getX() - boundingBox.getMin().getX();
+        float y = boundingBox.getMax().getY() - boundingBox.getMin().getY();
+        float z = boundingBox.getMax().getZ() - boundingBox.getMin().getZ();
+
+        IBody = new Matrix3f()
+                .set(0, 0, y*y+z*z)
+                .set(1, 1, x*x+z*z)
+                .set(2, 2, x*x+y*y)
+                .scale(mass/12);
+
+        IBodyInv = new Matrix3f();
+        IBody.invert(IBodyInv);
     }
 
     @Override
@@ -85,15 +100,27 @@ public class Collider extends Phantom {
     }
 
     public Matrix3f getR(){
-        return R;
+        return rotation.get(new Matrix3f());
     }
 
     public Vector3fc getF() {
         return F;
     }
 
+    public Vector3fc getT() {
+        return T;
+    }
+
     public Vector3f getVelocity(){
         return P.div(mass, new Vector3f());
+    }
+
+    public Matrix3f getIBody() {
+        return IBody;
+    }
+
+    public Matrix3f getIBodyInv() {
+        return IBodyInv;
     }
 
     private void readObject(ObjectInputStream inputStream) throws Exception {
@@ -139,6 +166,10 @@ public class Collider extends Phantom {
 
     public void setLinearMomentum(Vector3f p) {
         this.P = p;
+    }
+
+    public void setAngularMomentum(Vector3f l) {
+        this.L = l;
     }
 
     public void setBoundingBox(BoundingBox boundingBox) {
