@@ -11,7 +11,6 @@ import net.sknv.engine.graph.*;
 import net.sknv.engine.physics.PhysicsEngine;
 import net.sknv.engine.physics.colliders.OBB;
 import org.joml.Matrix4f;
-import org.joml.Quaternionf;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
@@ -55,7 +54,7 @@ public class UltimateKekGame implements IGameLogic {
 
     public UltimateKekGame() {
         renderer = new Renderer();
-        camera = new Camera(new Vector3f(), new Quaternionf());
+        camera = new Camera(new Vector3f(), new Vector3f());
         cameraPosInc = new Vector3f();
         cameraRotInc = new Vector3f();
     }
