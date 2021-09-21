@@ -4,6 +4,7 @@ import net.sknv.engine.entities.HudElement;
 import net.sknv.engine.entities.TextItem;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class HudTerminal {
 
@@ -85,14 +86,12 @@ public class HudTerminal {
             String toMatch = parsed[parsed.length-1];
             System.out.println("expression to match ->" + toMatch);
 
-            ArrayList<String> suggestions = new ArrayList<>();
-            for (Command c : Command.values()){
-                if(c.getCommandName().startsWith(toMatch)){
-                    suggestions.add(c.getCommandName().replaceFirst(toMatch, ""));
-                }
-            }
+            List<String> matches = Arrays.stream(Command.values())
+                    .filter(c -> c.getCommandName().startsWith(toMatch))
+                    .map(c -> c.getCommandName().replaceFirst(toMatch, ""))
+                    .collect(Collectors.toList());
 
-            System.out.println("suggestions ->" + suggestions);
+            System.out.println("suggestions ->" + matches);
         }
     }
 

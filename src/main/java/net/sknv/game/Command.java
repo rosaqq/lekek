@@ -3,9 +3,7 @@ package net.sknv.game;
 public enum Command {
     SAVESCENE{
         @Override
-        public String getCommandName() {
-            return "savescene";
-        }
+        public String getCommandName() { return "savescene"; }
     },
     LOADSCENE {
         @Override
