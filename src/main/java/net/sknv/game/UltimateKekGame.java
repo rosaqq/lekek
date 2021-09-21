@@ -17,8 +17,9 @@ import org.joml.Vector3f;
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.glViewport;
@@ -87,23 +88,16 @@ public class UltimateKekGame implements IGameLogic {
 
     public void initPhysicsEngine() {
         physicsEngine = new PhysicsEngine();
-        List<AbstractGameItem> gameItems = scene.getGameItems();
-        for (AbstractGameItem gameItem : gameItems) {
-            //todo: temporary, GameItem empty constructor should deprecate and bb should be initialized on a constructor with all params,
-            // unless it is decided to not deprecate the empty constructor to support other types of gameItems (Huds, lines, stuff)
-            // in that case class inheritance should be pondered
 
-            // todo: temp if to prevent HudElements from getting called in the Physics Engine
-            if (gameItem instanceof Collider) {
-                Collider collider = (Collider) gameItem;
-                collider.setBoundingBox(new OBB(collider));
-                try {
-                    physicsEngine.addGameItem(collider);
-                } catch (Exception e) {
-                    System.out.println("object colliding");
-                }
-            }
-        }
+        scene.getColliders().stream().forEach(
+                collider -> {
+                    collider.setBoundingBox(new OBB(collider));
+                        try {
+                            physicsEngine.addGameItem(collider);
+                        } catch (Exception e) {
+                            System.out.println("object colliding");
+                        }
+                });
     }
 
     private void initCamera() {
@@ -179,29 +173,19 @@ public class UltimateKekGame implements IGameLogic {
             scene.addGameItem(new Phantom(MeshUtils.generateLine(WebColor.Yellow, new Vector3f(ray.origin), new Vector3f(end))));
         }
 
-        ArrayList<Collider> clickedItems = new ArrayList<>();
-        for (AbstractGameItem gameItem : scene.getGameItems()) {
-            if (gameItem instanceof Collider) {
-                // todo: spaghet
-                Collider collider = (Collider) gameItem;
-                if(mouseInput.isLeftClicked() && ray.intersectsItem(collider)) clickedItems.add(collider);
-            }
-        }
+        Set<Collider> clickedItems = scene.getColliders().stream()
+                .filter(collider -> mouseInput.isLeftClicked() && ray.intersectsItem(collider))
+                .peek(c -> c.drawBB(WebColor.Yellow))
+                .collect(Collectors.toSet());
 
         selectedItem.ifPresent( x -> x.drawBB(WebColor.Green));
 
-        if(!clickedItems.isEmpty()) {
-            float d = cameraPos.distance(clickedItems.get(0).getPosition());
-            for (Collider item : clickedItems) {
-                if (cameraPos.distance(item.getPosition()) <= d){
-                    d = cameraPos.distance(item.getPosition());
-                    selectedItem = Optional.of(item);
-                }
-                item.drawBB(WebColor.Yellow);
-            }
-            selectedItem.ifPresent(x -> x.drawBB(WebColor.Red));
-        }
-
+        clickedItems.stream()
+                .min((c1, c2) -> Float.compare(cameraPos.distance(c1.getPosition()), cameraPos.distance(c2.getPosition())))
+                .ifPresent(c -> {
+                    c.drawBB(WebColor.Red);
+                    selectedItem = Optional.of(c);
+                });
     }
 
     private void moveCamera(Window window, MouseInput mouseInput) {

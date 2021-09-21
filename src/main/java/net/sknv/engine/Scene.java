@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * This class represents a level.<br>
@@ -145,19 +146,33 @@ public class Scene implements Serializable {
 
     public void addGameItem(AbstractGameItem item) {
         gameItems.add(item);
+        if (item instanceof Collider) colliders.add((Collider) item);
     }
+
     public void addAllGameItems(Collection<? extends AbstractGameItem> items) {
         gameItems.addAll(items);
+
+        addColliders(
+        items.stream()
+                .filter( i -> i instanceof Collider)
+                .map( c -> (Collider) c)
+                .collect(Collectors.toList())
+        );
+
     }
+
     private void addColliders(Collection<? extends Collider> items) {
         colliders.addAll(items);
     }
+
     public void removeItem(AbstractGameItem item) {
         gameItems.remove(item);
     }
+
     public void removeAllItems() {
         gameItems.clear();
     }
+
     public Terrain getTerrain() {
         return terrain;
     }
