@@ -60,12 +60,4 @@ public class SkyBox extends AbstractGameItem {
         glBindVertexArray(0);
         glBindTexture(GL_TEXTURE_2D, 0);
     }
-
-    public void setAmbientLight(Vector3f ambientLight) {
-        this.ambientLight = ambientLight;
-    }
-
-    public void setProjectionMatrix(Matrix4f projectionMatrix) {
-        this.projectionMatrix = projectionMatrix;
-    }
 }
