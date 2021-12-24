@@ -7,13 +7,16 @@ import net.sknv.engine.Utils;
 import net.sknv.engine.entities.AbstractGameItem;
 import net.sknv.engine.entities.Collider;
 import net.sknv.engine.entities.HudElement;
-import net.sknv.engine.graph.*;
+import net.sknv.engine.graph.DirectionalLight;
+import net.sknv.engine.graph.Mesh;
+import net.sknv.engine.graph.ShaderProgram;
+import net.sknv.engine.graph.Transformation;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL30.glBindVertexArray;
+
 
 public class Renderer {
 
@@ -107,35 +110,18 @@ public class Renderer {
         renderLights(viewMatrix, ambientLight, directionalLight);
 
         //render each game item
-        for (AbstractGameItem gameItem : scene.getGameItems()) {
+        for (Collider gameItem : scene.getColliders()) {
 
+            //render collider
             Matrix4f transformationResult = Transformation.getModelViewMatrix(gameItem, viewMatrix);
             shaderProgram.setUniform("modelViewMatrix", transformationResult);
             shaderProgram.setUniform("material", gameItem.getMesh().getMaterial());
 
             gameItem.render(shaderProgram);
 
-            //todo spaghet
-            if (gameItem instanceof Collider && (((Collider) gameItem).getShowBB()!=null)) {
-                Mesh aabbMesh = MeshUtils.generateAABB(((Collider) gameItem).getShowBB(), ((Collider) gameItem).getBoundingBox());
-                Mesh obbMesh = MeshUtils.generateOBB(((Collider) gameItem).getShowBB(), ((Collider) gameItem).getBoundingBox());
-
-                shaderProgram.setUniform("modelViewMatrix", viewMatrix);
-
-                //draw meshes
-                shaderProgram.setUniform("material", aabbMesh.getMaterial());
-                glBindVertexArray(aabbMesh.getVaoId());
-                glDrawElements(GL_LINES, aabbMesh.getVertexCount(), GL_UNSIGNED_INT, 0);
-
-                shaderProgram.setUniform("material", obbMesh.getMaterial());
-                glBindVertexArray(obbMesh.getVaoId());
-                glDrawElements(GL_LINES, obbMesh.getVertexCount(), GL_UNSIGNED_INT, 0);
-
-                //restore state
-                glBindVertexArray(0);
-                glBindTexture(GL_TEXTURE_2D, 0);
-                ((Collider) gameItem).setShowBB(null);
-            }
+            //render bb
+            shaderProgram.setUniform("modelViewMatrix", viewMatrix);
+            gameItem.getBoundingBox().render(shaderProgram);
         }
 
         for (AbstractGameItem terrainBlock : scene.getTerrain().getGameItems()) {
@@ -182,9 +168,6 @@ public class Renderer {
         SkyBox skyBox = scene.getSkyBox();
         skyBoxShaderProgram.bind();
 
-        // todo: [spaghet] SkyBox ShaderProgram needs ambient light and projection matrix,
-        //  these setters are used to provide them without having to change the render method signature.
-        //  Bad because calling render without using these setters = fail engine.
         skyBoxShaderProgram.setUniform("texture_sampler", 0);
         skyBoxShaderProgram.setUniform("projectionMatrix", projectionMatrix);
 

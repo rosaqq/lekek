@@ -1,6 +1,6 @@
 package net.sknv.engine.graph;
 
-import net.sknv.engine.entities.AbstractGameItem;
+import net.sknv.engine.entities.Phantom;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -101,7 +101,7 @@ public class Transformation {
     }
 
 
-    public static Matrix4f getModelViewMatrix(AbstractGameItem item, Matrix4f viewMatrix) {// modelViewMatrix = modelMatrix * viewMatrix
+    public static Matrix4f getModelViewMatrix(Phantom item, Matrix4f viewMatrix) {// modelViewMatrix = modelMatrix * viewMatrix
         //must create copy
         Matrix4f viewCurr = new Matrix4f(viewMatrix);
         //because this changes the values of viewCurr and since there is only one viewMatrix for all the items,
@@ -109,21 +109,16 @@ public class Transformation {
         return viewCurr.mul(getModelMatrix(item));
     }
 
-    public static Matrix4f getOrtoProjModelMatrix(AbstractGameItem gameItem, Matrix4f orthoMatrix) {
+    public static Matrix4f getOrtoProjModelMatrix(Phantom gameItem, Matrix4f orthoMatrix) {
         Matrix4f modelMatrix = getModelMatrix(gameItem);
         Matrix4f orthoMatrixCurr = new Matrix4f(orthoMatrix);
         orthoMatrixCurr.mul(modelMatrix);
         return orthoMatrixCurr;
     }
 
-    public static Matrix4f getModelMatrix(AbstractGameItem gameItem){
-        //Vector3f rotation = gameItem.getRotation();
-
+    public static Matrix4f getModelMatrix(Phantom gameItem){
         modelViewMatrix.identity().translate(gameItem.getPosition()).
                 rotate(gameItem.getRotation()).
-                //rotateX(rotation.x).
-                //rotateY(rotation.y).
-                //rotateZ(rotation.z).
                 scale(gameItem.getScale());
         return modelViewMatrix;
     }

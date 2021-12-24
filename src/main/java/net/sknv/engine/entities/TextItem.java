@@ -12,11 +12,10 @@ public class TextItem extends HudElement {
     private Optional<Color> background;
 
     public TextItem(TrueType font, Optional<String> text){
-        super();
+        super(font.renderText(text.orElse(" "))); //todo: maybe extend the Optional type to Mesh class? kekw
         this.font = font;
         this.text = text;
         this.background = Optional.empty();
-        setMesh(font.renderText(text.orElse(" "))); //todo: maybe extend the Optional type to Mesh class? kekw
     }
 
     public Optional<String> getText() {

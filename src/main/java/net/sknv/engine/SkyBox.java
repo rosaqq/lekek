@@ -1,32 +1,45 @@
 package net.sknv.engine;
 
-import net.sknv.engine.entities.AbstractGameItem;
 import net.sknv.engine.graph.*;
 
-public class SkyBox extends AbstractGameItem {
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
+import static org.lwjgl.opengl.GL13.glActiveTexture;
+import static org.lwjgl.opengl.GL30.glBindVertexArray;
+
+public class SkyBox implements IRenderable {
+
+    private Mesh mesh;
+    private float scale;
 
     public SkyBox(String objModel, String textureFile) throws Exception {
-        //todo problem: SKYBOX NOT WORKING WHEN SERIALIZED
-        super();
-        Mesh skyBoxMesh = OBJLoader.loadMesh(objModel);
+        mesh = OBJLoader.loadMesh(objModel);
         Texture skyBoxTexture = new Texture(textureFile);
-        skyBoxMesh.setMaterial(new Material(skyBoxTexture, 0));
-        setMesh(skyBoxMesh);
-        setPosition(0, 0, 0);
+        mesh.setMaterial(new Material(skyBoxTexture, 0));
     }
 
-    /**
-     * <b>DO NOT</b> call this method before passing the Projection Matrix and the Ambient Light via:
-     * <ul>
-     *     <li>skyBox.setAmbientLight(...)</li>
-     *     <li>skyBox.setProjectionMatrix(...)</li>
-     * </ul>
-     * // todo: fix this behaviour
-     * <br>
-     * Check parent method for full documentation.
-     */
-    @Override
     public void render(ShaderProgram shaderProgram) {
-        super.render(shaderProgram);
+        Texture texture = mesh.getMaterial().getTexture();
+        if (texture != null) {
+            //tell openGL to use first texture bank and bind texture
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, texture.getId());
+        }
+        else {
+            // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        }
+
+        //draw mesh
+        glBindVertexArray(mesh.getVaoId());
+
+        glDrawElements(mesh.getDrawMode(), mesh.getVertexCount(), GL_UNSIGNED_INT, 0);
+
+        //restore state
+        glBindVertexArray(0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    public void setScale(float skyBoxScale) {
+        this.scale = skyBoxScale;
     }
 }

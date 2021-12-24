@@ -1,10 +1,16 @@
 package net.sknv.engine.physics.colliders;
 
 import net.sknv.engine.entities.Collider;
+import net.sknv.engine.graph.Mesh;
+import net.sknv.engine.graph.MeshUtils;
+import net.sknv.engine.graph.ShaderProgram;
 import org.joml.Math;
 import org.joml.*;
 
-public class OBB extends AABB implements BoundingBox {
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL30.glBindVertexArray;
+
+public class OBB extends AABB {
 
     private Vector3f center;
     private Vector3f x, y, z;
@@ -82,4 +88,20 @@ public class OBB extends AABB implements BoundingBox {
         return z;
     }
 
+    @Override
+    public void render(ShaderProgram shaderProgram) {
+        renderColor.ifPresent( color -> {
+            Mesh obbMesh = MeshUtils.generateOBB(renderColor.get(), this);
+
+            shaderProgram.setUniform("material", obbMesh.getMaterial());
+            glBindVertexArray(obbMesh.getVaoId());
+            glDrawElements(GL_LINES, obbMesh.getVertexCount(), GL_UNSIGNED_INT, 0);
+
+            //restore state
+            glBindVertexArray(0);
+            glBindTexture(GL_TEXTURE_2D, 0);
+
+            super.render(shaderProgram);
+        });
+    }
 }

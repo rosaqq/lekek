@@ -2,7 +2,6 @@ package net.sknv.engine.entities;
 
 import net.sknv.engine.graph.Mesh;
 import net.sknv.engine.graph.ShaderProgram;
-import net.sknv.engine.graph.WebColor;
 import net.sknv.engine.physics.colliders.BoundingBox;
 import net.sknv.engine.physics.colliders.OBB;
 import org.joml.Matrix3f;
@@ -30,7 +29,6 @@ public class Collider extends Phantom {
     protected Vector3f velocity;
 
     //other
-    private WebColor showBB = null;
     protected transient BoundingBox boundingBox;
     protected boolean isStatic;
 
@@ -116,22 +114,10 @@ public class Collider extends Phantom {
         super.render(shaderProgram);
     }
 
-    public void drawBB(WebColor color) {
-        this.showBB = color;
-    }
-
     @Override
     public String toString() {
         return "Collider{" +
                 "boundingBox=" + boundingBox +
                 '}';
-    }
-
-    public WebColor getShowBB() {
-        return showBB;
-    }
-
-    public void setShowBB(WebColor showBB) {
-        this.showBB = showBB;
     }
 }

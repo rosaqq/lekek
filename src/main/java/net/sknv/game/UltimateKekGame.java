@@ -175,15 +175,15 @@ public class UltimateKekGame implements IGameLogic {
 
         Set<Collider> clickedItems = scene.getColliders().stream()
                 .filter(collider -> mouseInput.isLeftClicked() && ray.intersectsItem(collider))
-                .peek(c -> c.drawBB(WebColor.Yellow))
+                .peek(c -> c.getBoundingBox().setRenderColor(Optional.of(WebColor.Yellow)))
                 .collect(Collectors.toSet());
 
-        selectedItem.ifPresent( x -> x.drawBB(WebColor.Green));
+        selectedItem.ifPresent( x -> x.getBoundingBox().setRenderColor(Optional.of(WebColor.Green)));
 
         clickedItems.stream()
                 .min((c1, c2) -> Float.compare(cameraPos.distance(c1.getPosition()), cameraPos.distance(c2.getPosition())))
                 .ifPresent(c -> {
-                    c.drawBB(WebColor.Red);
+                    c.getBoundingBox().setRenderColor(Optional.of(WebColor.Red));
                     selectedItem = Optional.of(c);
                 });
     }

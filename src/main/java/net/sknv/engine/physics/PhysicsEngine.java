@@ -36,7 +36,7 @@ public class PhysicsEngine {
                 if(fodase.getVelocity().length() != 0 ){ //game item has vel
                     //detectCollisions(collider);
                     Vector3f step = fodase.getVelocity().mul(0.1f);
-                    collider.translate(step);
+                    ((Collider) collider).translate(step);
                 }
             }
 

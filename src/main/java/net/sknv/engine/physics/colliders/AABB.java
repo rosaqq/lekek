@@ -1,17 +1,23 @@
 package net.sknv.engine.physics.colliders;
 
 import net.sknv.engine.entities.Collider;
+import net.sknv.engine.graph.*;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
-public class AABB implements BoundingBox {
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL30.glBindVertexArray;
 
-    public Collider collider;
-    public EndPoint min, max;
+public class AABB extends BoundingBox implements IRenderable {
+
+    protected Collider collider;
+    protected EndPoint min, max;
+    protected Optional<WebColor> renderColor = Optional.empty();
 
     public AABB(Collider collider) {
         this.collider = collider;
@@ -50,6 +56,14 @@ public class AABB implements BoundingBox {
 
     public EndPoint getMax() {
         return max;
+    }
+
+    public Optional<WebColor> getRenderColor() {
+        return renderColor;
+    }
+
+    public void setRenderColor(Optional<WebColor> renderColor) {
+        this.renderColor = renderColor;
     }
 
     public void translate(Vector3f step){
@@ -94,5 +108,23 @@ public class AABB implements BoundingBox {
     public String toString() {
         return "min " + min.getPosition().x + "," + min.getPosition().y + "," + min.getPosition().z +
                 "\tmax " + max.getPosition().x + "," + max.getPosition().y + "," + max.getPosition().z;
+    }
+
+    @Override
+    public void render(ShaderProgram shaderProgram) {
+            renderColor.ifPresent(color -> {
+                Mesh aabbMesh = MeshUtils.generateAABB(renderColor.get(), this);
+
+                //draw meshes
+                shaderProgram.setUniform("material", aabbMesh.getMaterial());
+                glBindVertexArray(aabbMesh.getVaoId());
+                glDrawElements(GL_LINES, aabbMesh.getVertexCount(), GL_UNSIGNED_INT, 0);
+
+                //restore state
+                glBindVertexArray(0);
+                glBindTexture(GL_TEXTURE_2D, 0);
+
+                setRenderColor(Optional.empty());
+            });
     }
 }
