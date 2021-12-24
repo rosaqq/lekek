@@ -1,7 +1,6 @@
 package net.sknv.engine.entities;
 
 import net.sknv.engine.graph.Mesh;
-import net.sknv.engine.graph.MeshUtils;
 import net.sknv.engine.graph.ShaderProgram;
 import net.sknv.engine.graph.WebColor;
 import net.sknv.engine.physics.colliders.BoundingBox;
@@ -11,9 +10,6 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.io.ObjectInputStream;
-
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL30.glBindVertexArray;
 
 public class Collider extends Phantom {
 
@@ -118,24 +114,6 @@ public class Collider extends Phantom {
     @Override
     public void render(ShaderProgram shaderProgram) {
         super.render(shaderProgram);
-        if (showBB!=null) {
-            Mesh aabbMesh = MeshUtils.generateAABB(showBB, boundingBox);
-            Mesh obbMesh = MeshUtils.generateOBB(showBB, boundingBox);
-
-            //draw meshes
-            shaderProgram.setUniform("material", aabbMesh.getMaterial());
-            glBindVertexArray(aabbMesh.getVaoId());
-            glDrawElements(GL_LINES, aabbMesh.getVertexCount(), GL_UNSIGNED_INT, 0);
-
-            shaderProgram.setUniform("material", obbMesh.getMaterial());
-            glBindVertexArray(obbMesh.getVaoId());
-            glDrawElements(GL_LINES, obbMesh.getVertexCount(), GL_UNSIGNED_INT, 0);
-
-            //restore state
-            glBindVertexArray(0);
-            glBindTexture(GL_TEXTURE_2D, 0);
-            showBB = null;
-        }
     }
 
     public void drawBB(WebColor color) {
@@ -147,5 +125,13 @@ public class Collider extends Phantom {
         return "Collider{" +
                 "boundingBox=" + boundingBox +
                 '}';
+    }
+
+    public WebColor getShowBB() {
+        return showBB;
+    }
+
+    public void setShowBB(WebColor showBB) {
+        this.showBB = showBB;
     }
 }

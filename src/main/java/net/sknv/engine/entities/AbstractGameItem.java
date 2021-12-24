@@ -20,11 +20,11 @@ import static org.lwjgl.opengl.GL30.glBindVertexArray;
  */
 public abstract class AbstractGameItem implements Serializable {
 
-    protected Vector3f position;
-    protected Quaternionf rotation;
-    protected float scale;
+    private Vector3f position;
+    private Quaternionf rotation;
+    private float scale;
+    private Mesh mesh;
 
-    protected Mesh mesh;
     public AbstractGameItem() {
         // this still exists because of TextItem calling it
         // but spaghet
