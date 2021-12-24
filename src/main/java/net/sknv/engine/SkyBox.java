@@ -40,20 +40,6 @@ public class SkyBox extends AbstractGameItem {
 
         int drawMode = GL_TRIANGLES;
 
-        assert ambientLight != null: "You MUST set the Ambient Light with this::setAmbientLight!";
-        assert projectionMatrix != null: "You MUST set the Projection Matrix with this::setProjectionMatrix!";
-
-        shaderProgram.setUniform("texture_sampler", 0);
-        shaderProgram.setUniform("projectionMatrix", projectionMatrix);
-
-        Matrix4f vMatrix = new Matrix4f(viewMatrix);
-        vMatrix.m30(0);
-        vMatrix.m31(0);
-        vMatrix.m32(0);
-        Matrix4f modelViewMatrix = Transformation.getModelViewMatrix(this, vMatrix);
-        shaderProgram.setUniform("modelViewMatrix", modelViewMatrix);
-        shaderProgram.setUniform("ambientLight", ambientLight);
-
         // this part used to be on Mesh::render
         Texture texture = mesh.getMaterial().getTexture();
         if (texture != null) {
