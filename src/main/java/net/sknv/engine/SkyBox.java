@@ -3,7 +3,6 @@ package net.sknv.engine;
 import net.sknv.engine.entities.AbstractGameItem;
 import net.sknv.engine.graph.*;
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
@@ -11,9 +10,6 @@ import static org.lwjgl.opengl.GL13.glActiveTexture;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 
 public class SkyBox extends AbstractGameItem {
-
-    private Matrix4f projectionMatrix;
-    private Vector3f ambientLight;
 
     public SkyBox(String objModel, String textureFile) throws Exception {
         //todo problem: SKYBOX NOT WORKING WHEN SERIALIZED
