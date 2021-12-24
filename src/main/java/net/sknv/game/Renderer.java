@@ -150,16 +150,16 @@ public class Renderer {
         // todo: [spaghet] SkyBox ShaderProgram needs ambient light and projection matrix,
         //  these setters are used to provide them without having to change the render method signature.
         //  Bad because calling render without using these setters = fail engine.
-        shaderProgram.setUniform("texture_sampler", 0);
-        shaderProgram.setUniform("projectionMatrix", projectionMatrix);
+        skyBoxShaderProgram.setUniform("texture_sampler", 0);
+        skyBoxShaderProgram.setUniform("projectionMatrix", projectionMatrix);
 
         Matrix4f vMatrix = new Matrix4f(viewMatrix);
         vMatrix.m30(0);
         vMatrix.m31(0);
         vMatrix.m32(0);
         Matrix4f modelViewMatrix = Transformation.getModelViewMatrix(skyBox, vMatrix);
-        shaderProgram.setUniform("modelViewMatrix", modelViewMatrix);
-        shaderProgram.setUniform("ambientLight", scene.getSceneLight().getAmbientLight());
+        skyBoxShaderProgram.setUniform("modelViewMatrix", modelViewMatrix);
+        skyBoxShaderProgram.setUniform("ambientLight", scene.getSceneLight().getAmbientLight());
 
         skyBox.render(skyBoxShaderProgram, viewMatrix);
 
