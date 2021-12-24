@@ -7,6 +7,7 @@ import net.sknv.engine.Utils;
 import net.sknv.engine.entities.AbstractGameItem;
 import net.sknv.engine.entities.HudElement;
 import net.sknv.engine.graph.DirectionalLight;
+import net.sknv.engine.graph.Mesh;
 import net.sknv.engine.graph.ShaderProgram;
 import net.sknv.engine.graph.Transformation;
 import org.joml.Matrix4f;
@@ -108,11 +109,16 @@ public class Renderer {
 
         //render each game item
         for (AbstractGameItem gameItem : scene.getGameItems()) {
-            gameItem.render(shaderProgram, viewMatrix);
+
+            Matrix4f transformationResult = Transformation.getModelViewMatrix(gameItem, viewMatrix);
+            shaderProgram.setUniform("modelViewMatrix", transformationResult);
+            shaderProgram.setUniform("material", gameItem.getMesh().getMaterial());
+
+            gameItem.render(shaderProgram);
         }
 
         for (AbstractGameItem terrainBlock : scene.getTerrain().getGameItems()) {
-            terrainBlock.render(shaderProgram, viewMatrix);
+            terrainBlock.render(shaderProgram);
         }
 
         shaderProgram.unbind();
@@ -133,11 +139,19 @@ public class Renderer {
         shaderProgram.setUniform("directionalLight", currDirLight);
     }
 
-    private void renderHud(Matrix4f ortho, IHud hud) {
+    private void renderHud(Matrix4f orthoProjMatrix, IHud hud) {
         hudShaderProgram.bind();
 
-        for (HudElement elem : hud.getHudElements()) {
-            elem.render(hudShaderProgram, ortho);
+        for (HudElement hudElement : hud.getHudElements()) {
+
+            // Set ortohtaphic and model matrix for this HUD item
+            Matrix4f projModelMatrix = Transformation.getOrtoProjModelMatrix(hudElement, orthoProjMatrix);
+            Mesh hudElementMesh = hudElement.getMesh();
+            hudShaderProgram.setUniform("projModelMatrix", projModelMatrix);
+            hudShaderProgram.setUniform("colour", hudElementMesh.getMaterial().getAmbientColor());
+            hudShaderProgram.setUniform("hasTexture", hudElementMesh.getMaterial().isTextured() ? 1 : 0);
+
+            hudElement.render(hudShaderProgram);
         }
 
         hudShaderProgram.unbind();
@@ -161,7 +175,7 @@ public class Renderer {
         skyBoxShaderProgram.setUniform("modelViewMatrix", modelViewMatrix);
         skyBoxShaderProgram.setUniform("ambientLight", scene.getSceneLight().getAmbientLight());
 
-        skyBox.render(skyBoxShaderProgram, viewMatrix);
+        skyBox.render(skyBoxShaderProgram);
 
         skyBoxShaderProgram.unbind();
     }

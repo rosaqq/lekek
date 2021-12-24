@@ -7,7 +7,6 @@ import net.sknv.engine.graph.WebColor;
 import net.sknv.engine.physics.colliders.BoundingBox;
 import net.sknv.engine.physics.colliders.OBB;
 import org.joml.Matrix3f;
-import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -117,13 +116,11 @@ public class Collider extends Phantom {
     }
 
     @Override
-    public void render(ShaderProgram shaderProgram, Matrix4f viewMatrix) {
-        super.render(shaderProgram, viewMatrix);
+    public void render(ShaderProgram shaderProgram) {
+        super.render(shaderProgram);
         if (showBB!=null) {
             Mesh aabbMesh = MeshUtils.generateAABB(showBB, boundingBox);
             Mesh obbMesh = MeshUtils.generateOBB(showBB, boundingBox);
-
-            shaderProgram.setUniform("modelViewMatrix", viewMatrix);
 
             //draw meshes
             shaderProgram.setUniform("material", aabbMesh.getMaterial());
@@ -140,6 +137,7 @@ public class Collider extends Phantom {
             showBB = null;
         }
     }
+
     public void drawBB(WebColor color) {
         this.showBB = color;
     }
