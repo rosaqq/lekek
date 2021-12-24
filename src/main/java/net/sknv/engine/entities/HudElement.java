@@ -26,7 +26,6 @@ public class HudElement extends AbstractGameItem {
 
         int drawMode = GL_TRIANGLES;
 
-        Mesh mesh = this.getMesh();
         // Set ortohtaphic and model matrix for this HUD item
         Matrix4f projModelMatrix = Transformation.getOrtoProjModelMatrix(this, orthoProjMatrix);
 
