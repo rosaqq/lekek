@@ -11,7 +11,7 @@ import java.util.Optional;
 public abstract class BoundingBox implements IRenderable {
     public abstract void translate(Vector3f v);
     public abstract void rotate(Quaternionf rot);
-    public abstract void setRenderColor(Optional<WebColor> color);
+    public abstract void setRenderColor(Optional<WebColor> color); //todo spaghet
     public abstract Collider getCollider();
     public abstract EndPoint getMin();
     public abstract EndPoint getMax();
