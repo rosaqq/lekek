@@ -1,7 +1,10 @@
 package net.sknv.engine.physics.colliders;
 
 import net.sknv.engine.entities.Collider;
-import net.sknv.engine.graph.*;
+import net.sknv.engine.graph.Mesh;
+import net.sknv.engine.graph.MeshUtils;
+import net.sknv.engine.graph.ShaderProgram;
+import net.sknv.engine.graph.WebColor;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -13,7 +16,7 @@ import java.util.Optional;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 
-public class AABB extends BoundingBox implements IRenderable {
+public class AABB extends BoundingBox {
 
     protected Collider collider;
     protected EndPoint min, max;
