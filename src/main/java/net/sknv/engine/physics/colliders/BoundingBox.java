@@ -13,6 +13,6 @@ public abstract class BoundingBox implements IRenderable {
     public abstract void rotate(Quaternionf rot);
     public abstract void setRenderColor(Optional<WebColor> color); //todo spaghet
     public abstract Collider getCollider();
-    public abstract EndPoint getMin();
-    public abstract EndPoint getMax();
+    public abstract EndPoint getMin(); //todo: remove getMin and getMax methods
+    public abstract EndPoint getMax(); //these methods are aabb specific
 }
