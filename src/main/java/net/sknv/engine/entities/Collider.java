@@ -1,7 +1,6 @@
 package net.sknv.engine.entities;
 
 import net.sknv.engine.graph.Mesh;
-import net.sknv.engine.graph.ShaderProgram;
 import net.sknv.engine.physics.colliders.BoundingBox;
 import net.sknv.engine.physics.colliders.OBB;
 import org.joml.Matrix3f;
@@ -107,11 +106,6 @@ public class Collider extends Phantom {
 
     public float getMass() {
         return mass;
-    }
-
-    @Override
-    public void render(ShaderProgram shaderProgram) {
-        super.render(shaderProgram);
     }
 
     @Override

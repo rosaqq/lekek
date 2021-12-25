@@ -128,6 +128,12 @@ public class Renderer {
         }
 
         for (Phantom terrainBlock : scene.getTerrain().getGameItems()) {
+
+            //render terrain blocks
+            Matrix4f transformationResult = Transformation.getModelViewMatrix(terrainBlock, viewMatrix);
+            shaderProgram.setUniform("modelViewMatrix", transformationResult);
+            shaderProgram.setUniform("material", terrainBlock.getMesh().getMaterial());
+
             terrainBlock.render(shaderProgram);
         }
 

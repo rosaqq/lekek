@@ -115,7 +115,7 @@ public class AABB extends BoundingBox implements IRenderable {
             renderColor.ifPresent(color -> {
                 Mesh aabbMesh = MeshUtils.generateAABB(renderColor.get(), this);
 
-                //draw meshes
+                //draw mesh
                 shaderProgram.setUniform("material", aabbMesh.getMaterial());
                 glBindVertexArray(aabbMesh.getVaoId());
                 glDrawElements(GL_LINES, aabbMesh.getVertexCount(), GL_UNSIGNED_INT, 0);

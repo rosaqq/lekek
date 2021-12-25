@@ -4,6 +4,7 @@ import org.joml.Vector4f;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Optional;
 
 public class Material implements Serializable{
 
@@ -11,40 +12,40 @@ public class Material implements Serializable{
 
     private Vector4f ambientColor, diffuseColor, specularColor;
 
-    private transient Texture texture;
+    private transient Optional<Texture> texture;
 
     private float reflectance;
 
-    private WebColor webColor;
+    private Optional<WebColor> webColor;
 
     public Material() {
-        this(DEFAULT_COLOR, DEFAULT_COLOR, DEFAULT_COLOR, null, 0);
+        this(DEFAULT_COLOR, DEFAULT_COLOR, DEFAULT_COLOR, Optional.empty(), 0);
     }
 
     public Material(WebColor color, float alpha, float reflectance) {
         this(new Vector4f(color.getVector3f(), alpha), reflectance);
-        this.webColor = color;
+        this.webColor = Optional.of(color);
     }
 
     public Material(Vector4f color, float reflectance) {
-        this(color, color, color, null, reflectance);
+        this(color, color, color, Optional.empty(), reflectance);
     }
 
     public Material(Texture texture) {
-        this(DEFAULT_COLOR, DEFAULT_COLOR, DEFAULT_COLOR, texture, 0);
+        this(DEFAULT_COLOR, DEFAULT_COLOR, DEFAULT_COLOR, Optional.of(texture), 0);
     }
 
     public Material(Texture texture, float reflectance) {
-        this(DEFAULT_COLOR, DEFAULT_COLOR, DEFAULT_COLOR, texture, reflectance);
+        this(DEFAULT_COLOR, DEFAULT_COLOR, DEFAULT_COLOR, Optional.of(texture), reflectance);
     }
 
-    public Material(Vector4f ambientColor, Vector4f diffuseColor, Vector4f specularColor, Texture texture, float reflectance) {
+    public Material(Vector4f ambientColor, Vector4f diffuseColor, Vector4f specularColor, Optional<Texture> texture, float reflectance) {
         this.ambientColor = ambientColor;
         this.diffuseColor = diffuseColor;
         this.specularColor = specularColor;
         this.texture = texture;
         this.reflectance = reflectance;
-        this.webColor = null;
+        this.webColor = Optional.empty();
     }
 
     public Vector4f getAmbientColor() {
@@ -71,16 +72,16 @@ public class Material implements Serializable{
         this.specularColor = specularColor;
     }
 
-    public Texture getTexture() {
+    public Optional<Texture> getTexture() {
         return texture;
     }
 
     public void setTexture(Texture texture) {
-        this.texture = texture;
+        this.texture = Optional.of(texture);
     }
 
     public boolean isTextured() {
-        return this.texture != null;
+        return texture.isPresent();
     }
 
     public float getReflectance() {
@@ -108,6 +109,12 @@ public class Material implements Serializable{
 
     private void writeObject(java.io.ObjectOutputStream outputStream) throws IOException {
         outputStream.defaultWriteObject();
-        if(texture!=null) outputStream.writeObject(texture.getFileName());
+        texture.ifPresent(texture -> {
+            try {
+                outputStream.writeObject(texture.getFileName());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 }

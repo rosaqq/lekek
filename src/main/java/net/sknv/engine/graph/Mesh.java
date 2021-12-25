@@ -14,7 +14,7 @@ import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
 import static org.lwjgl.opengl.GL30.*;
 
-public class Mesh implements Serializable {
+public class Mesh implements Serializable, IRenderable {
 
     private String modelFile;
     public final int vaoId;
@@ -311,10 +311,7 @@ public class Mesh implements Serializable {
         }
 
         // Delete the texture
-        Texture texture = material.getTexture();
-        if (texture != null) {
-            texture.cleanup();
-        }
+        material.getTexture().ifPresent(Texture::cleanup);
 
         // Delete the VAO
         glBindVertexArray(0);
@@ -355,5 +352,23 @@ public class Mesh implements Serializable {
 
     public int getDrawMode() {
         return drawMode;
+    }
+
+    @Override
+    public void render(ShaderProgram shaderProgram) {
+
+        material.getTexture().ifPresent( texture -> {
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, texture.getId());
+        });
+
+        //draw mesh
+        glBindVertexArray(getVaoId());
+
+        glDrawElements(getDrawMode(), getVertexCount(), GL_UNSIGNED_INT, 0);
+
+        //restore state
+        glBindVertexArray(0);
+        glBindTexture(GL_TEXTURE_2D, 0);
     }
 }
