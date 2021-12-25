@@ -4,7 +4,6 @@ import net.sknv.engine.IGameLogic;
 import net.sknv.engine.MouseInput;
 import net.sknv.engine.Scene;
 import net.sknv.engine.Window;
-import net.sknv.engine.entities.AbstractGameItem;
 import net.sknv.engine.entities.Collider;
 import net.sknv.engine.entities.Phantom;
 import net.sknv.engine.graph.*;
@@ -226,7 +225,7 @@ public class UltimateKekGame implements IGameLogic {
     @Override
     public void cleanup() {
         renderer.cleanup();
-        for(AbstractGameItem item : scene.getGameItems()) {
+        for(Phantom item : scene.getGameItems()) {
             // todo: temp fix for retro-compat. Update AbsGameItem to include cleanup methods or find other good solution.
             if (item instanceof Phantom) ((Phantom)item).getMesh().cleanUp();
         }

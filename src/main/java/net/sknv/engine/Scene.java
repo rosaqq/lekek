@@ -1,7 +1,7 @@
 package net.sknv.engine;
 
-import net.sknv.engine.entities.AbstractGameItem;
 import net.sknv.engine.entities.Collider;
+import net.sknv.engine.entities.Phantom;
 import net.sknv.engine.entities.Terrain;
 import net.sknv.engine.graph.*;
 import net.sknv.engine.physics.colliders.OBB;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
  * It's responsible for managing:
  * <ul>
  *     <li>{@link Terrain}</li>
- *     <li>Game Items ({@link AbstractGameItem})</li>
+ *     <li>Game Items ({@link Phantom})</li>
  *     <li>{@link SkyBox}</li>
  *     <li>Lighting ({@link SceneLight})</li>
  * </ul>
@@ -30,7 +30,7 @@ public class Scene implements Serializable {
     private final static Logger logger = Logger.getLogger(Scene.class.getName());
 
     private transient Terrain terrain;
-    private ArrayList<AbstractGameItem> gameItems = new ArrayList<>();
+    private ArrayList<Phantom> gameItems = new ArrayList<>();
     private ArrayList<Collider> colliders = new ArrayList<>();
     private SkyBox skyBox;
     private SceneLight sceneLight;
@@ -144,12 +144,12 @@ public class Scene implements Serializable {
         setSceneLight(sceneLight);
     }
 
-    public void addGameItem(AbstractGameItem item) {
+    public void addGameItem(Phantom item) {
         gameItems.add(item);
         if (item instanceof Collider) colliders.add((Collider) item);
     }
 
-    public void addAllGameItems(Collection<? extends AbstractGameItem> items) {
+    public void addAllGameItems(Collection<? extends Phantom> items) {
         gameItems.addAll(items);
 
         addColliders(
@@ -165,7 +165,7 @@ public class Scene implements Serializable {
         colliders.addAll(items);
     }
 
-    public void removeItem(AbstractGameItem item) {
+    public void removeItem(Phantom item) {
         gameItems.remove(item);
     }
 
@@ -181,11 +181,11 @@ public class Scene implements Serializable {
         this.terrain = terrain;
     }
 
-    public ArrayList<AbstractGameItem> getGameItems() {
+    public ArrayList<Phantom> getGameItems() {
         return gameItems;
     }
 
-    public void setGameItems(ArrayList<AbstractGameItem> gameItems) {
+    public void setGameItems(ArrayList<Phantom> gameItems) {
         this.gameItems = gameItems;
     }
 

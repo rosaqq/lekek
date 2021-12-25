@@ -1,18 +1,26 @@
 package net.sknv.engine.entities;
 
+import net.sknv.engine.graph.IRenderable;
 import net.sknv.engine.graph.Mesh;
 import net.sknv.engine.graph.ShaderProgram;
+import net.sknv.engine.graph.Texture;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-public class Phantom extends AbstractGameItem {
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
+import static org.lwjgl.opengl.GL13.glActiveTexture;
+import static org.lwjgl.opengl.GL30.glBindVertexArray;
 
+public class Phantom implements IRenderable {
+
+    protected Mesh mesh;
     protected Vector3f position;
     protected Quaternionf rotation;
     protected float scale;
 
     public Phantom(Mesh mesh) {
-        super(mesh);
+        this.mesh = mesh;
         this.position = new Vector3f();
         this.rotation = new Quaternionf();
         this.scale = 1;
@@ -95,9 +103,25 @@ public class Phantom extends AbstractGameItem {
         setRotation(new Quaternionf().mul(rotation).mul(this.rotation));
     }
 
-    @Override
     public void render(ShaderProgram shaderProgram) {
-        super.render(shaderProgram);
+        Texture texture = mesh.getMaterial().getTexture();
+        if (texture != null) {
+            //tell openGL to use first texture bank and bind texture
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, texture.getId());
+        }
+        else {
+            // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        }
+
+        //draw mesh
+        glBindVertexArray(mesh.getVaoId());
+
+        glDrawElements(mesh.getDrawMode(), mesh.getVertexCount(), GL_UNSIGNED_INT, 0);
+
+        //restore state
+        glBindVertexArray(0);
+        glBindTexture(GL_TEXTURE_2D, 0);
     }
 
     public void translate(Vector3f step) {
@@ -106,7 +130,7 @@ public class Phantom extends AbstractGameItem {
 
     @Override
     public String toString() {
-        return "AbstractGameItem{" +
+        return "Phantom{" +
                 "position=" + position +
                 ", rotation=" + rotation +
                 ", scale=" + scale +

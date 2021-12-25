@@ -180,7 +180,7 @@ public class Terrain {
         return boundingBox;
     }
 
-    public ArrayList<AbstractGameItem> getGameItems() {
+    public ArrayList<Phantom> getGameItems() {
         return new ArrayList<>(Arrays.asList(gameItems));
     }
 

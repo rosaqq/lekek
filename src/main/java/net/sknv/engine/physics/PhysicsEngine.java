@@ -1,8 +1,8 @@
 package net.sknv.engine.physics;
 
 import net.sknv.engine.Scene;
-import net.sknv.engine.entities.AbstractGameItem;
 import net.sknv.engine.entities.Collider;
+import net.sknv.engine.entities.Phantom;
 import net.sknv.engine.physics.colliders.BoundingBox;
 import net.sknv.engine.physics.collisionDetection.SPCollision;
 import org.joml.Vector3f;
@@ -30,7 +30,7 @@ public class PhysicsEngine {
         //detectCollisions(gameItems);
         //solveCollisions();
 
-        for (AbstractGameItem collider : scene.getGameItems()) {
+        for (Phantom collider : scene.getGameItems()) {
             if(collider instanceof Collider){
                 Collider fodase = (Collider) collider;
                 if(fodase.getVelocity().length() != 0 ){ //game item has vel
@@ -45,7 +45,7 @@ public class PhysicsEngine {
     }
 
     private void applyForces(Scene scene) {
-        for (AbstractGameItem collider : scene.getGameItems()){
+        for (Phantom collider : scene.getGameItems()){
             //collider.applyForce(scene.getGravity());
         }
     }

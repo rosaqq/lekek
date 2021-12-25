@@ -4,9 +4,9 @@ import net.sknv.engine.IHud;
 import net.sknv.engine.Scene;
 import net.sknv.engine.SkyBox;
 import net.sknv.engine.Utils;
-import net.sknv.engine.entities.AbstractGameItem;
 import net.sknv.engine.entities.Collider;
 import net.sknv.engine.entities.HudElement;
+import net.sknv.engine.entities.Phantom;
 import net.sknv.engine.graph.DirectionalLight;
 import net.sknv.engine.graph.Mesh;
 import net.sknv.engine.graph.ShaderProgram;
@@ -110,7 +110,7 @@ public class Renderer {
         renderLights(viewMatrix, ambientLight, directionalLight);
 
         //render each game item
-        for (Collider gameItem : scene.getColliders()) {
+        for (Phantom gameItem : scene.getGameItems()) {
 
             //render collider
             Matrix4f transformationResult = Transformation.getModelViewMatrix(gameItem, viewMatrix);
@@ -119,12 +119,15 @@ public class Renderer {
 
             gameItem.render(shaderProgram);
 
-            //render bb
-            shaderProgram.setUniform("modelViewMatrix", viewMatrix);
-            gameItem.getBoundingBox().render(shaderProgram);
+            if (gameItem instanceof Collider){
+                //render bb
+                shaderProgram.setUniform("modelViewMatrix", viewMatrix);
+                ((Collider) gameItem).getBoundingBox().render(shaderProgram);
+            }
+
         }
 
-        for (AbstractGameItem terrainBlock : scene.getTerrain().getGameItems()) {
+        for (Phantom terrainBlock : scene.getTerrain().getGameItems()) {
             terrainBlock.render(shaderProgram);
         }
 
