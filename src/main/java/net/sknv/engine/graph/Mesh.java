@@ -21,8 +21,8 @@ public class Mesh implements Serializable, IRenderable {
     public final List<Integer> vboIdList;
     public final int vertexCount;
     private Material material;
-    private int drawMode;
-    private Vector3f min, max;
+    private final int drawMode;
+    private final Vector3f min, max;
     private final ArrayList<Vector3f> vertices;
 
     public Mesh(float[] pos, float[] textCoords, float[] normals, int[] idx, int drawmode) {
@@ -49,7 +49,7 @@ public class Mesh implements Serializable, IRenderable {
         }
 
         // bounding box vertices
-        vertices = new ArrayList<Vector3f>(
+        vertices = new ArrayList<>(
                 List.of(min,
                         new Vector3f(min.x, min.y, max.z), new Vector3f(min.x, max.y, min.z),
                         new Vector3f(max.x, min.y, min.z), new Vector3f(min.x, max.y, max.z),

@@ -95,7 +95,7 @@ public class Material implements Serializable{
     @Override
     public String toString() {
         return "Material{" +
-                "color=" + (webColor==null?"Unknown":webColor.toString()) +
+                "color=" + (webColor.isPresent()?"Unknown":webColor.toString()) +
                 '}';
     }
 

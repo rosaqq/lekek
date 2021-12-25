@@ -31,13 +31,13 @@ public class Scene implements Serializable {
 
     private transient Terrain terrain;
     private ArrayList<Phantom> gameItems = new ArrayList<>();
-    private ArrayList<Collider> colliders = new ArrayList<>();
+    private final ArrayList<Collider> colliders = new ArrayList<>();
     private SkyBox skyBox;
     private SceneLight sceneLight;
 
     private Vector3f gravity;
 
-    public Scene() throws Exception {
+    public Scene() {
         logger.info("Initializing default scene.");
         initializeScene();
     }
