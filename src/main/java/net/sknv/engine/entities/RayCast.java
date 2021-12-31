@@ -1,6 +1,5 @@
-package net.sknv.engine.graph;
+package net.sknv.engine.entities;
 
-import net.sknv.engine.entities.Collider;
 import org.joml.Vector3f;
 
 public class RayCast {

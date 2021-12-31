@@ -5,6 +5,7 @@ import net.sknv.engine.Scene;
 import net.sknv.engine.Window;
 import net.sknv.engine.entities.Collider;
 import net.sknv.engine.entities.Phantom;
+import net.sknv.engine.entities.RayCast;
 import net.sknv.engine.graph.*;
 import net.sknv.engine.physics.PhysicsEngine;
 import net.sknv.engine.physics.colliders.OBB;
@@ -163,19 +164,21 @@ public class GameLogic {
 		}
 
 		Set<Collider> clickedItems =
-				scene.getColliders().stream()
-						.filter(collider -> mouseInput.isLeftClicked() && ray.intersectsItem(collider))
-						.peek(c -> c.getBoundingBox().setRenderColor(Optional.of(WebColor.Yellow)))
-						.collect(Collectors.toSet());
+			scene.getColliders().stream()
+					.filter(collider -> mouseInput.isLeftClicked() && ray.intersectsItem(collider))
+					.peek(c -> c.getBoundingBox().setRenderColor(Optional.of(WebColor.Yellow)))
+					.collect(Collectors.toSet());
 
-		selectedItem.ifPresent(x -> x.getBoundingBox().setRenderColor(Optional.of(WebColor.Green)));
+		selectedItem.ifPresent(
+			x -> x.getBoundingBox().setRenderColor(Optional.of(WebColor.Green))
+		);
 
 		clickedItems.stream()
-				.min((c1, c2) -> Float.compare(cameraPos.distance(c1.getPosition()), cameraPos.distance(c2.getPosition())))
-				.ifPresent(c -> {
-					c.getBoundingBox().setRenderColor(Optional.of(WebColor.Red));
-					selectedItem = Optional.of(c);
-				});
+			.min((c1, c2) -> Float.compare(cameraPos.distance(c1.getPosition()), cameraPos.distance(c2.getPosition())))
+			.ifPresent(c -> {
+				c.getBoundingBox().setRenderColor(Optional.of(WebColor.Red));
+				selectedItem = Optional.of(c);
+			});
 	}
 
 	private void moveCamera(Window window, MouseInput mouseInput) {
