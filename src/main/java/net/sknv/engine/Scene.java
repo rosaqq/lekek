@@ -82,9 +82,7 @@ public class Scene implements Serializable {
 		float maxY = 0.1f;
 		int textInc = 40;
 		try {
-			terrain = new Terrain(terrainSize, terrainScale, minY, maxY,
-					"src/main/resources/textures/heightmap.png",
-					"src/main/resources/textures/terrain.png", textInc);
+			terrain = new Terrain(terrainSize, terrainScale, minY, maxY, "src/main/resources/textures/heightmap.png", "src/main/resources/textures/terrain.png", textInc);
 		} catch (Exception e) {
 			logger.severe("Failed to load Terrain files.");
 			e.printStackTrace();
@@ -126,7 +124,6 @@ public class Scene implements Serializable {
 			logger.severe("Failed to load SkyBox files!");
 			e.printStackTrace();
 		}
-
 	}
 
 	private void setupLighting() {
@@ -148,14 +145,7 @@ public class Scene implements Serializable {
 
 	public void addAllGameItems(Collection<? extends Phantom> items) {
 		gameItems.addAll(items);
-
-		addColliders(
-				items.stream()
-						.filter(i -> i instanceof Collider)
-						.map(c -> (Collider) c)
-						.collect(Collectors.toList())
-		);
-
+		addColliders(items.stream().filter(i -> i instanceof Collider).map(c -> (Collider) c).collect(Collectors.toList()));
 	}
 
 	private void addColliders(Collection<? extends Collider> items) {
