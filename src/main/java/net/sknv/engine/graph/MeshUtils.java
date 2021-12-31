@@ -1,6 +1,6 @@
 package net.sknv.engine.graph;
 
-import net.sknv.engine.physics.colliders.BoundingBox;
+import net.sknv.engine.physics.colliders.AABB;
 import net.sknv.engine.physics.colliders.OBB;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -41,37 +41,40 @@ public class MeshUtils {
 		return mesh;
 	}
 
-	public static Mesh generateAABB(WebColor color, BoundingBox bb) {
+	public static Mesh generateAABBMesh(AABB bb) {
 		Vector3f min = bb.getMin().getPosition();
 		Vector3f max = bb.getMax().getPosition();
 
 		// Create Positions Array
-		float[] posArray = new float[]{min.x, min.y, min.z, max.x, min.y, min.z, min.x, max.y, min.z, min.x, min.y, max.z,
-
-				min.x, max.y, max.z, max.x, min.y, max.z, max.x, max.y, min.z, max.x, max.y, max.z,};
+		float[] posArray = new float[]{
+			min.x, min.y, min.z,
+			max.x, min.y, min.z,
+			min.x, max.y, min.z,
+			min.x, min.y, max.z,
+			min.x, max.y, max.z,
+			max.x, min.y, max.z,
+			max.x, max.y, min.z,
+			max.x, max.y, max.z
+		};
 
 		// Create Indices Array
-		int[] idxArray = new int[]{0, 1, 0, 2, 0, 3,
-
-				1, 5, 1, 6,
-
-				2, 4, 2, 6,
-
-				3, 4, 3, 5,
-
-				4, 7, 5, 7, 6, 7,};
+		int[] idxArray = new int[]{
+			0, 1, 0, 2, 0, 3,
+			1, 5, 1, 6, 2, 4,
+			2, 6, 3, 4, 3, 5,
+			4, 7, 5, 7, 6, 7
+		};
 
 		Mesh mesh = new Mesh(posArray, idxArray, GL_LINES);
-		//mesh.setMaterial(new Material(color, 1, 1));
 		return mesh;
 	}
 
-	public static Mesh generateOBB(WebColor color, BoundingBox bb) {
-		Vector3f center = ((OBB) bb).getCenter();
+	public static Mesh generateOBBMesh(OBB bb) {
+		Vector3f center = bb.getCenter();
 
-		Vector3f x = ((OBB) bb).getX();
-		Vector3f y = ((OBB) bb).getY();
-		Vector3f z = ((OBB) bb).getZ();
+		Vector3f x = bb.getX();
+		Vector3f y = bb.getY();
+		Vector3f z = bb.getZ();
 
 		// Create Positions Array
 		float[] posArray = new float[]{
@@ -90,17 +93,14 @@ public class MeshUtils {
 				center.x + x.x - y.x - z.x, center.y + x.y - y.y - z.y, center.z + x.z - y.z - z.z, center.x - x.x + y.x - z.x, center.y - x.y + y.y - z.y, center.z - x.z + y.z - z.z, center.x - x.x - y.x + z.x, center.y - x.y - y.y + z.y, center.z - x.z - y.z + z.z,};
 
 		// Create Indices Array
-		int[] idxArray = new int[]{0, 1, 0, 2, 0, 3,
-
-				4, 5, 4, 6, 4, 7,
-
-				8, 9, 8, 10, 8, 11,
-
-				5, 10, 5, 11, 6, 11, 6, 9, 7, 9, 7, 10,};
-
+		int[] idxArray = new int[]{
+			0, 1, 0, 2, 0, 3, 4, 5,
+			4, 6, 4, 7, 8, 9, 8, 10,
+			8, 11, 5, 10, 5, 11, 6, 11,
+			6, 9, 7, 9, 7, 10
+		};
 
 		Mesh mesh = new Mesh(posArray, idxArray, GL_LINES);
-		//mesh.setMaterial(new Material(color, 1, 1));
 		return mesh;
 	}
 

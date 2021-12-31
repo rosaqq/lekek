@@ -92,7 +92,7 @@ public class OBB extends AABB {
     @Override
     public void render(ShaderProgram shaderProgram) {
         renderColor.ifPresent( color -> {
-            Mesh obbMesh = MeshUtils.generateOBB(renderColor.get(), this);
+            Mesh obbMesh = MeshUtils.generateOBBMesh(this);
 
             shaderProgram.setUniform("material", new Material(color));
             glBindVertexArray(obbMesh.getVaoId());

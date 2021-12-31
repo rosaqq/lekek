@@ -113,7 +113,7 @@ public class AABB extends BoundingBox {
 	@Override
 	public void render(ShaderProgram shaderProgram) {
 		renderColor.ifPresent(color -> {
-			Mesh aabbMesh = MeshUtils.generateAABB(renderColor.get(), this);
+			Mesh aabbMesh = MeshUtils.generateAABBMesh(this);
 
 			//draw mesh
 			shaderProgram.setUniform("material", new Material(color));
