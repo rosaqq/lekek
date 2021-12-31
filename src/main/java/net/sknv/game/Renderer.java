@@ -8,6 +8,7 @@ import net.sknv.engine.entities.AbstractGameItem;
 import net.sknv.engine.entities.HudElement;
 import net.sknv.engine.graph.DirectionalLight;
 import net.sknv.engine.graph.ShaderProgram;
+import net.sknv.engine.graph.Transformation;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -149,8 +150,16 @@ public class Renderer {
         // todo: [spaghet] SkyBox ShaderProgram needs ambient light and projection matrix,
         //  these setters are used to provide them without having to change the render method signature.
         //  Bad because calling render without using these setters = fail engine.
-        skyBox.setAmbientLight(scene.getSceneLight().getAmbientLight());
-        skyBox.setProjectionMatrix(projectionMatrix);
+        skyBoxShaderProgram.setUniform("texture_sampler", 0);
+        skyBoxShaderProgram.setUniform("projectionMatrix", projectionMatrix);
+
+        Matrix4f vMatrix = new Matrix4f(viewMatrix);
+        vMatrix.m30(0);
+        vMatrix.m31(0);
+        vMatrix.m32(0);
+        Matrix4f modelViewMatrix = Transformation.getModelViewMatrix(skyBox, vMatrix);
+        skyBoxShaderProgram.setUniform("modelViewMatrix", modelViewMatrix);
+        skyBoxShaderProgram.setUniform("ambientLight", scene.getSceneLight().getAmbientLight());
 
         skyBox.render(skyBoxShaderProgram, viewMatrix);
 
