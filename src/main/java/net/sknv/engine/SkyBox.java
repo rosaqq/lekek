@@ -7,9 +7,7 @@ import net.sknv.engine.graph.Texture;
 
 public class SkyBox extends Phantom {
 
-    public SkyBox(String objModel, String textureFile) throws Exception {
-        super(OBJLoader.loadMesh(objModel));
-        Texture skyBoxTexture = new Texture(textureFile);
-        super.setMaterial(new Material(skyBoxTexture, 0));
-    }
+	public SkyBox(String objModel, String textureFile) throws Exception { //todo: deprecate this class?
+		super(OBJLoader.loadMesh(objModel), new Material(new Texture(textureFile), 0));
+	}
 }

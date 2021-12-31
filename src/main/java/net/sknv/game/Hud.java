@@ -1,6 +1,5 @@
 package net.sknv.game;
 
-import net.sknv.engine.IHud;
 import net.sknv.engine.Window;
 import net.sknv.engine.entities.HudElement;
 import net.sknv.engine.entities.TextItem;
@@ -12,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class Hud implements IHud {
+public class Hud {
 
 	private static final WebColor CROSS_HAIR_COLOR = WebColor.White;
 	private final ArrayList<IRenderable> hudElements;
@@ -57,7 +56,6 @@ public class Hud implements IHud {
 		this.compassItem.setRotationEuclidean(new Vector3f(0, 0, (float) Math.PI + angle));
 	}
 
-	@Override
 	public ArrayList<IRenderable> getHudElements() {
 		return hudElements;
 	}
@@ -88,5 +86,9 @@ public class Hud implements IHud {
 
 	public void addElement(HudElement myElement) {
 		hudElements.add(myElement);
+	}
+
+	public void cleanup() {
+		for (IRenderable element : getHudElements()) element.cleanup();
 	}
 }

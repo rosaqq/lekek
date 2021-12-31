@@ -1,6 +1,5 @@
 package net.sknv.game;
 
-import net.sknv.engine.IHud;
 import net.sknv.engine.Scene;
 import net.sknv.engine.SkyBox;
 import net.sknv.engine.Utils;
@@ -85,7 +84,7 @@ public class Renderer {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
-	public void render(Matrix4f projectionMatrix, Matrix4f viewMatrix, Matrix4f ortho, Scene scene, IHud hud) {
+	public void render(Matrix4f projectionMatrix, Matrix4f viewMatrix, Matrix4f ortho, Scene scene, Hud hud) {
 		// todo: idea is implement single loop based on IRenderable
 		clear();
 		renderScene(projectionMatrix, viewMatrix, scene);
@@ -151,7 +150,7 @@ public class Renderer {
 		shaderProgram.setUniform("directionalLight", currDirLight);
 	}
 
-	private void renderHud(Matrix4f orthoProjMatrix, IHud hud) {
+	private void renderHud(Matrix4f orthoProjMatrix, Hud hud) {
 		hudShaderProgram.bind();
 
 		for (IRenderable hudElement : hud.getHudElements()) {

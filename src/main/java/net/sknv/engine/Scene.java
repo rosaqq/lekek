@@ -213,4 +213,10 @@ public class Scene implements Serializable {
 	public ArrayList<Collider> getColliders() {
 		return colliders;
 	}
+
+	public void cleanUp() {
+		skyBox.cleanup();
+		for (Phantom item : gameItems) item.cleanup();
+		// maybe do sceneLight.cleanUp() here?
+	}
 }
