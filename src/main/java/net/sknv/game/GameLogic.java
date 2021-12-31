@@ -159,17 +159,23 @@ public class GameLogic {
 		if(mouseInput.isRightClicked()) {
 			Vector3f end = new Vector3f();
 			ray.origin.add(ray.direction.mul(20f), end);
-			scene.addGameItem(new Phantom(MeshUtils.generateLine(WebColor.Yellow, new Vector3f(ray.origin), new Vector3f(end))));
+			scene.addGameItem(new Phantom(MeshUtils.generateLine(new Vector3f(ray.origin), new Vector3f(end)), new Material(WebColor.Yellow)));
 		}
 
-		Set<Collider> clickedItems = scene.getColliders().stream().filter(collider -> mouseInput.isLeftClicked() && ray.intersectsItem(collider)).peek(c -> c.getBoundingBox().setRenderColor(Optional.of(WebColor.Yellow))).collect(Collectors.toSet());
+		Set<Collider> clickedItems =
+				scene.getColliders().stream()
+						.filter(collider -> mouseInput.isLeftClicked() && ray.intersectsItem(collider))
+						.peek(c -> c.getBoundingBox().setRenderColor(Optional.of(WebColor.Yellow)))
+						.collect(Collectors.toSet());
 
 		selectedItem.ifPresent(x -> x.getBoundingBox().setRenderColor(Optional.of(WebColor.Green)));
 
-		clickedItems.stream().min((c1, c2) -> Float.compare(cameraPos.distance(c1.getPosition()), cameraPos.distance(c2.getPosition()))).ifPresent(c -> {
-			c.getBoundingBox().setRenderColor(Optional.of(WebColor.Red));
-			selectedItem = Optional.of(c);
-		});
+		clickedItems.stream()
+				.min((c1, c2) -> Float.compare(cameraPos.distance(c1.getPosition()), cameraPos.distance(c2.getPosition())))
+				.ifPresent(c -> {
+					c.getBoundingBox().setRenderColor(Optional.of(WebColor.Red));
+					selectedItem = Optional.of(c);
+				});
 	}
 
 	private void moveCamera(Window window, MouseInput mouseInput) {
