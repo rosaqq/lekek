@@ -8,7 +8,7 @@ import org.joml.Vector3f;
 
 import java.util.Optional;
 
-public abstract class BoundingBox {
+public abstract class BoundingBox { //todo: REFACTOR THIS interface and AABB/OBB
     public abstract void translate(Vector3f v);
     public abstract void rotate(Quaternionf rot);
     public abstract void setRenderColor(Optional<WebColor> color); //todo spaghet
