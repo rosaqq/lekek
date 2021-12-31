@@ -14,16 +14,16 @@ import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
 import static org.lwjgl.opengl.GL30.*;
 
-public class Mesh implements Serializable, IRenderable {
+public class Mesh implements Serializable {
 
-    private String modelFile;
     public final int vaoId;
     public final List<Integer> vboIdList;
     public final int vertexCount;
-    private Material material;
+    //private Material material;
     private final int drawMode;
     private final Vector3f min, max;
     private final ArrayList<Vector3f> vertices;
+    private String modelFile;
 
     public Mesh(float[] pos, float[] textCoords, float[] normals, int[] idx, int drawmode) {
         this.drawMode = drawmode;
@@ -38,24 +38,18 @@ public class Mesh implements Serializable, IRenderable {
         // generate values for bounding box
         min = new Vector3f(pos[0], pos[1], pos[2]);
         max = new Vector3f(pos[0], pos[1], pos[2]);
-        for(int i=0; i!=pos.length; i+=3){
-            if(pos[i]<min.x) min.x = pos[i];
-            if(pos[i+1]<min.y) min.y = pos[i+1];
-            if(pos[i+2]<min.z) min.z = pos[i+2];
+        for (int i = 0; i != pos.length; i += 3) {
+            if (pos[i] < min.x) min.x = pos[i];
+            if (pos[i + 1] < min.y) min.y = pos[i + 1];
+            if (pos[i + 2] < min.z) min.z = pos[i + 2];
 
-            if(pos[i]>max.x) max.x = pos[i];
-            if(pos[i+1]>max.y) max.y = pos[i+1];
-            if(pos[i+2]>max.z) max.z = pos[i+2];
+            if (pos[i] > max.x) max.x = pos[i];
+            if (pos[i + 1] > max.y) max.y = pos[i + 1];
+            if (pos[i + 2] > max.z) max.z = pos[i + 2];
         }
 
         // bounding box vertices
-        vertices = new ArrayList<>(
-                List.of(min,
-                        new Vector3f(min.x, min.y, max.z), new Vector3f(min.x, max.y, min.z),
-                        new Vector3f(max.x, min.y, min.z), new Vector3f(min.x, max.y, max.z),
-                        new Vector3f(max.x, min.y, max.z), new Vector3f(max.x, max.y, min.z),
-                        max)
-                );
+        vertices = new ArrayList<>(List.of(min, new Vector3f(min.x, min.y, max.z), new Vector3f(min.x, max.y, min.z), new Vector3f(max.x, min.y, min.z), new Vector3f(min.x, max.y, max.z), new Vector3f(max.x, min.y, max.z), new Vector3f(max.x, max.y, min.z), max));
 
         // end BB code
         // -------------------------------------------------------------------------------------------------------------
@@ -251,8 +245,7 @@ public class Mesh implements Serializable, IRenderable {
 
             // And now we have a VAO filled with the model data, with it's ID stored in vaoId!
 
-        }
-        finally {
+        } finally {
             if (posbuff != null) {
                 MemoryUtil.memFree(posbuff);
             }
@@ -277,13 +270,13 @@ public class Mesh implements Serializable, IRenderable {
         this(pos, null, null, idx, drawMode);
     }
 
-    public Material getMaterial() {
-        return material;
-    }
+//    public Material getMaterial() {
+//        return material;
+//    }
 
-    public void setMaterial(Material material) {
-        this.material = material;
-    }
+//    public void setMaterial(Material material) {
+//        this.material = material;
+//    }
 
     public int getVaoId() {
         return vaoId;
@@ -311,7 +304,7 @@ public class Mesh implements Serializable, IRenderable {
         }
 
         // Delete the texture
-        material.getTexture().ifPresent(Texture::cleanup);
+        //material.getTexture().ifPresent(Texture::cleanup);
 
         // Delete the VAO
         glBindVertexArray(0);
@@ -340,13 +333,14 @@ public class Mesh implements Serializable, IRenderable {
         return max;
     }
 
-    public ArrayList<Vector3f> getVertices(){return vertices;}
+    public ArrayList<Vector3f> getVertices() {
+        return vertices;
+    }
 
     @Override
     public String toString() {
-        return "Mesh{" +
-                "modelFile='" + modelFile + '\'' +
-                ", material=" + material +
+        return "Mesh{" + "modelFile='" + modelFile + '\'' +
+                //", material=" + material +
                 '}';
     }
 
@@ -354,21 +348,21 @@ public class Mesh implements Serializable, IRenderable {
         return drawMode;
     }
 
-    @Override
-    public void render(ShaderProgram shaderProgram) {
-
-        material.getTexture().ifPresent( texture -> {
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, texture.getId());
-        });
-
-        //draw mesh
-        glBindVertexArray(getVaoId());
-
-        glDrawElements(getDrawMode(), getVertexCount(), GL_UNSIGNED_INT, 0);
-
-        //restore state
-        glBindVertexArray(0);
-        glBindTexture(GL_TEXTURE_2D, 0);
-    }
+//    @Override
+//    public void render(ShaderProgram shaderProgram) {
+//
+//        material.getTexture().ifPresent( texture -> {
+//            glActiveTexture(GL_TEXTURE0);
+//            glBindTexture(GL_TEXTURE_2D, texture.getId());
+//        });
+//
+//        //draw mesh
+//        glBindVertexArray(getVaoId());
+//
+//        glDrawElements(getDrawMode(), getVertexCount(), GL_UNSIGNED_INT, 0);
+//
+//        //restore state
+//        glBindVertexArray(0);
+//        glBindTexture(GL_TEXTURE_2D, 0);
+//    }
 }

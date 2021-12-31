@@ -1,5 +1,6 @@
 package net.sknv.engine.entities;
 
+import net.sknv.engine.graph.Material;
 import net.sknv.engine.graph.Mesh;
 import net.sknv.engine.physics.colliders.BoundingBox;
 import net.sknv.engine.physics.colliders.OBB;
@@ -31,8 +32,11 @@ public class Collider extends Phantom {
     protected transient BoundingBox boundingBox;
     protected boolean isStatic;
 
-    public Collider(Mesh mesh) {
-        super(mesh);
+    public Collider(Mesh mesh, Material material) {
+        super(mesh, material);
+
+        Object a = new Object();
+
         boundingBox = new OBB(this);
         isStatic = false;
         mass = 1;

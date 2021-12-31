@@ -1,6 +1,7 @@
 package net.sknv.engine.physics.colliders;
 
 import net.sknv.engine.entities.Collider;
+import net.sknv.engine.graph.Material;
 import net.sknv.engine.graph.Mesh;
 import net.sknv.engine.graph.MeshUtils;
 import net.sknv.engine.graph.ShaderProgram;
@@ -93,7 +94,7 @@ public class OBB extends AABB {
         renderColor.ifPresent( color -> {
             Mesh obbMesh = MeshUtils.generateOBB(renderColor.get(), this);
 
-            shaderProgram.setUniform("material", obbMesh.getMaterial());
+            shaderProgram.setUniform("material", new Material(color));
             glBindVertexArray(obbMesh.getVaoId());
             glDrawElements(GL_LINES, obbMesh.getVertexCount(), GL_UNSIGNED_INT, 0);
 

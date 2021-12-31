@@ -335,8 +335,7 @@ public class UltimateKekGame implements IGameLogic {
                     Mesh mesh = OBJLoader.loadMesh("/models/" + model + ".obj");
                     Texture texture = new Texture("src/main/resources/textures/lebloq.png");
                     Material material = new Material(texture, 1f);
-                    mesh.setMaterial(material);
-                    Collider newItem = new Collider(mesh);
+                    Collider newItem = new Collider(mesh, material);
                     scene.addGameItem(newItem);
 
                     if(in.length==5) newItem.translate(new Vector3f(Float.parseFloat(in[2]), Float.parseFloat(in[3]), Float.parseFloat(in[4])));
@@ -358,12 +357,11 @@ public class UltimateKekGame implements IGameLogic {
                     Mesh mesh = OBJLoader.loadMesh("/models/cube.obj");
                     Texture texture = new Texture("src/main/resources/textures/lebloq.png");
                     Material material = new Material(texture, 1f);
-                    mesh.setMaterial(material);
 
                     int offset = side/2;
                     for (int i=0;i<side;i++) {
                         for (int j=0; j<side; j++) {
-                            Collider newItem = new Collider(mesh);
+                            Collider newItem = new Collider(mesh, material);
                             scene.addGameItem(newItem);
                             newItem.setScale(scale);
                             newItem.setPosition(2*scale*(i-offset), 0, 2*scale*(j-offset));

@@ -1,23 +1,39 @@
 package net.sknv.engine.entities;
 
 import net.sknv.engine.graph.IRenderable;
+import net.sknv.engine.graph.Material;
 import net.sknv.engine.graph.Mesh;
 import net.sknv.engine.graph.ShaderProgram;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import static org.lwjgl.opengl.GL15.*;
+import static org.lwjgl.opengl.GL30.glBindVertexArray;
+
 public class Phantom implements IRenderable {
 
+    private static final Material DEFAULT_MATERIAL = new Material();
     protected Mesh mesh;
+    protected Material material;
     protected Vector3f position;
     protected Quaternionf rotation;
     protected float scale;
 
-    public Phantom(Mesh mesh) {
+    public Phantom(Mesh mesh, Material material, Vector3f position, Quaternionf rotation, float scale){
         this.mesh = mesh;
-        this.position = new Vector3f();
-        this.rotation = new Quaternionf();
-        this.scale = 1;
+        this.material = material;
+        this.position = position;
+        this.rotation = rotation;
+        this.scale = scale;
+    }
+
+    public Phantom(Mesh mesh, Material material){
+        this(mesh, material, new Vector3f(), new Quaternionf(), 1f);
+
+    }
+
+    public Phantom(Mesh mesh) {
+        this(mesh, DEFAULT_MATERIAL);
     }
 
     public Vector3f getPosition() {
@@ -97,8 +113,38 @@ public class Phantom implements IRenderable {
         setRotation(new Quaternionf().mul(rotation).mul(this.rotation));
     }
 
+    @Override
     public void render(ShaderProgram shaderProgram) {
-        mesh.render(shaderProgram);
+
+        material.getTexture().ifPresent( texture -> {
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, texture.getId());
+        });
+
+        //draw mesh
+        glBindVertexArray(mesh.getVaoId());
+
+        glDrawElements(mesh.getDrawMode(), mesh.getVertexCount(), GL_UNSIGNED_INT, 0);
+
+        //restore state
+        glBindVertexArray(0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+    }
+
+    @Override
+    public void cleanup() {
+        mesh.cleanUp();
+        //maybe do material.cleanUp() here ?
+    }
+
+    @Override
+    public boolean isTextured() {
+        return material.isTextured();
+    }
+
+    public Material getMaterial() {
+        return material;
     }
 
     public void translate(Vector3f step) {
@@ -115,4 +161,7 @@ public class Phantom implements IRenderable {
                 '}';
     }
 
+    protected void setMaterial(Material material) {
+        this.material = material;
+    }
 }

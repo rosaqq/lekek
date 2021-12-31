@@ -1,17 +1,17 @@
 package net.sknv.engine;
 
-import net.sknv.engine.entities.HudElement;
+import net.sknv.engine.graph.IRenderable;
 
 import java.util.ArrayList;
 
 public interface IHud {
 
-    ArrayList<HudElement> getHudElements();
+    ArrayList<IRenderable> getHudElements();
 
     default void cleanup() {
-        ArrayList<HudElement> HudElements = getHudElements();
-        for (HudElement elem : HudElements) {
-            if (elem.getMesh()!=null) elem.getMesh().cleanUp();
+        ArrayList<IRenderable> HudElements = getHudElements();
+        for (IRenderable elem : HudElements) {
+            elem.cleanup();
         }
     }
 }

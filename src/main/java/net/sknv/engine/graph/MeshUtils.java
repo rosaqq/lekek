@@ -27,7 +27,7 @@ public class MeshUtils {
 
         float[] texCoordsArr = new float[1];
         Mesh mesh = new Mesh(posArr, normalsArr, texCoordsArr, idxArr, drawMode);
-        mesh.setMaterial(material);
+        //mesh.setMaterial(material);
         return mesh;
     }
 
@@ -38,7 +38,7 @@ public class MeshUtils {
         // Create Indices Array
         int[] idxArray = new int[]{0,1};
         Mesh mesh = new Mesh(posArray,idxArray, GL_LINES);
-        mesh.setMaterial(new Material(color, 1, 1));
+        //mesh.setMaterial(new Material(color, 1, 1));
         return mesh;
     }
 
@@ -81,7 +81,7 @@ public class MeshUtils {
         };
 
         Mesh mesh = new Mesh(posArray,idxArray, GL_LINES);
-        mesh.setMaterial(new Material(color, 1, 1));
+        //mesh.setMaterial(new Material(color, 1, 1));
         return mesh;
     }
 
@@ -139,7 +139,7 @@ public class MeshUtils {
 
 
         Mesh mesh = new Mesh(posArray,idxArray, GL_LINES);
-        mesh.setMaterial(new Material(color, 1, 1));
+        //mesh.setMaterial(new Material(color, 1, 1));
         return mesh;
     }
 

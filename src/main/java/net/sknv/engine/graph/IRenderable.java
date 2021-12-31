@@ -1,5 +1,8 @@
 package net.sknv.engine.graph;
 
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
+
 /**
  * Implement this for renderable behaviour.
  */
@@ -17,4 +20,18 @@ public interface IRenderable {
      * @param shaderProgram {@link ShaderProgram} for this object.
      */
     void render(ShaderProgram shaderProgram);
+
+    Vector3f getPosition();
+
+    float getScale();
+
+    Quaternionf getRotation();
+
+    Material getMaterial();
+
+    Mesh getMesh();
+
+    void cleanup();
+
+    boolean isTextured();
 }

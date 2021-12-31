@@ -1,7 +1,6 @@
 package net.sknv.game;
 
 import net.sknv.engine.Utils;
-import net.sknv.engine.graph.Material;
 import net.sknv.engine.graph.Mesh;
 import net.sknv.engine.graph.Texture;
 import org.lwjgl.BufferUtils;
@@ -33,313 +32,309 @@ import static org.lwjgl.system.MemoryUtil.memSlice;
 
 public class TrueType {
 
-    private final ByteBuffer ttf;
-    private final STBTTFontinfo info;
-    private final int ascent;
-    private final int descent;
-    private final int lineGap;
-    private int fontHeight = 24;
-    private float contentScaleY;
-    private float contentScaleX;
+	private final ByteBuffer ttf;
+	private final STBTTFontinfo info;
+	private final int ascent;
+	private final int descent;
+	private final int lineGap;
+	private final int fontHeight = 24;
+	private final float contentScaleY;
+	private final float contentScaleX;
 
-    private float scale;
-    private int   lineOffset = 0;
-    private float lineHeight = 0;
+	private final float scale;
+	private final int lineOffset = 0;
+	private final float lineHeight = 0;
 
-    private boolean kerningEnabled = false;//todo: stbtt_GetCodepointKernAdvance throws access violation sometimes(?) so its set to false while no fix
-    private boolean lineBBEnabled = false;
+	private final boolean kerningEnabled = false;//todo: stbtt_GetCodepointKernAdvance throws access violation sometimes(?) so its set to false while no fix
+	private final boolean lineBBEnabled = false;
 
-    private int BITMAP_W = 512;//todo: find a way to calculate bitmap texture size
-    private int BITMAP_H = 512;
-    private Texture bitmapTexture;
-    private STBTTPackedchar.Buffer myCharData;
+	private int BITMAP_W = 512;//todo: find a way to calculate bitmap texture size
+	private int BITMAP_H = 512;
+	private final Texture bitmapTexture;
+	private final STBTTPackedchar.Buffer myCharData;
 
-    public TrueType(String inputFile){
-        try {//todo: hardcode
-            this.ttf = ioResourceToByteBuffer(inputFile);
-        } catch (Exception e) {
-            System.out.println("failed to load font");
-            throw new RuntimeException(e);
-        }
+	public TrueType(String inputFile) {
+		try {//todo: hardcode
+			this.ttf = ioResourceToByteBuffer(inputFile);
+		} catch (Exception e) {
+			System.out.println("failed to load font");
+			throw new RuntimeException(e);
+		}
 
-        info = STBTTFontinfo.create();
-        STBTruetype.stbtt_InitFont(info, ttf);
+		info = STBTTFontinfo.create();
+		STBTruetype.stbtt_InitFont(info, ttf);
 
-        try (MemoryStack stack = stackPush()) {
-            IntBuffer pAscent  = stack.mallocInt(1);
-            IntBuffer pDescent = stack.mallocInt(1);
-            IntBuffer pLineGap = stack.mallocInt(1);
+		try (MemoryStack stack = stackPush()) {
+			IntBuffer pAscent = stack.mallocInt(1);
+			IntBuffer pDescent = stack.mallocInt(1);
+			IntBuffer pLineGap = stack.mallocInt(1);
 
-            stbtt_GetFontVMetrics(info, pAscent, pDescent, pLineGap);
+			stbtt_GetFontVMetrics(info, pAscent, pDescent, pLineGap);
 
-            ascent = pAscent.get(0);
-            descent = pDescent.get(0);
-            lineGap = pLineGap.get(0);
-        }
+			ascent = pAscent.get(0);
+			descent = pDescent.get(0);
+			lineGap = pLineGap.get(0);
+		}
 
-        //set content scale
-        try (MemoryStack s = stackPush()) {
-            FloatBuffer px = s.mallocFloat(1);
-            FloatBuffer py = s.mallocFloat(1);
+		//set content scale
+		try (MemoryStack s = stackPush()) {
+			FloatBuffer px = s.mallocFloat(1);
+			FloatBuffer py = s.mallocFloat(1);
 
-            glfwGetMonitorContentScale(glfwGetPrimaryMonitor(), px, py);
+			glfwGetMonitorContentScale(glfwGetPrimaryMonitor(), px, py);
 
-            contentScaleX = px.get(0);
-            contentScaleY = py.get(0);
-        }
-        scale = stbtt_ScaleForPixelHeight(info, getFontHeight());
+			contentScaleX = px.get(0);
+			contentScaleY = py.get(0);
+		}
+		scale = stbtt_ScaleForPixelHeight(info, getFontHeight());
 
-        //BakeBitMapTexure
-        BITMAP_W = round(BITMAP_W * contentScaleX);
-        BITMAP_H = round(BITMAP_H * contentScaleY);
+		//BakeBitMapTexure
+		BITMAP_W = round(BITMAP_W * contentScaleX);
+		BITMAP_H = round(BITMAP_H * contentScaleY);
 
-        myCharData = STBTTPackedchar.malloc(1000);
+		myCharData = STBTTPackedchar.malloc(1000);
 
-        STBTTPackRange.Buffer packRanges = STBTTPackRange.malloc(1);
-        packRanges.put(STBTTPackRange.create().set(24, 0, null, 1000, myCharData, (byte) 0, (byte) 0)).flip();
+		STBTTPackRange.Buffer packRanges = STBTTPackRange.malloc(1);
+		packRanges.put(STBTTPackRange.create().set(24, 0, null, 1000, myCharData, (byte) 0, (byte) 0)).flip();
 
-        STBTTPackContext context = STBTTPackContext.malloc();
-        ByteBuffer packedBitmap = BufferUtils.createByteBuffer(BITMAP_W * BITMAP_H);
+		STBTTPackContext context = STBTTPackContext.malloc();
+		ByteBuffer packedBitmap = BufferUtils.createByteBuffer(BITMAP_W * BITMAP_H);
 
-        stbtt_PackBegin(context, packedBitmap,BITMAP_W, BITMAP_H,0,1);
-        stbtt_PackFontRanges(context, ttf,0, packRanges);
-        stbtt_PackEnd(context);
+		stbtt_PackBegin(context, packedBitmap, BITMAP_W, BITMAP_H, 0, 1);
+		stbtt_PackFontRanges(context, ttf, 0, packRanges);
+		stbtt_PackEnd(context);
 
-        bitmapTexture = new Texture(packedBitmap, BITMAP_W, BITMAP_H);
-    }
+		bitmapTexture = new Texture(packedBitmap, BITMAP_W, BITMAP_H);
+	}
 
-    public STBTTFontinfo getInfo() {
-        return info;
-    }
-    public float getContentScaleX() {
-        return contentScaleX;
-    }
-    public float getContentScaleY() {
-        return contentScaleY;
-    }
-    public int getFontHeight() {
-        return fontHeight;
-    }
-    private boolean isLineBBEnabled() {
-        return lineBBEnabled;
-    }
-    private boolean isKerningEnabled() {
-        return kerningEnabled;
-    }
+	public static ByteBuffer ioResourceToByteBuffer(String resource) throws IOException {
+		ByteBuffer buffer;
 
-    public Mesh renderText(String text) {
-        List<Float> positions = new ArrayList<>();
-        List<Float> textureCoordinates = new ArrayList<>();
-        float[] normals = new float[0];
-        List<Integer> indices = new ArrayList<>();
+		Path path = Paths.get(resource);
+		if(Files.isReadable(path)) {
+			try (SeekableByteChannel fc = Files.newByteChannel(path)) {
+				buffer = createByteBuffer((int) fc.size() + 1);
+				while (fc.read(buffer) != -1) ;
+			}
+		} else {
+			try (InputStream source = TrueType.class.getClassLoader().getResourceAsStream(resource); ReadableByteChannel rbc = Channels.newChannel(source)) {
+				buffer = createByteBuffer(1024);
 
-        try (MemoryStack stack = stackPush()) {
-            IntBuffer pCodePoint = stack.mallocInt(1);
+				while (true) {
+					int bytes = rbc.read(buffer);
+					if(bytes == -1) {
+						break;
+					}
+					if(buffer.remaining() == 0) {
+						buffer = resizeBuffer(buffer, buffer.capacity() * 3 / 2); // 50%
+					}
+				}
+			}
+		}
 
-            FloatBuffer x = stack.floats(0.0f);
-            FloatBuffer y = stack.floats(0.0f);
+		buffer.flip();
+		return memSlice(buffer);
+	}
 
-            STBTTAlignedQuad q = STBTTAlignedQuad.mallocStack(stack);
+	private static ByteBuffer resizeBuffer(ByteBuffer buffer, int newCapacity) {
+		ByteBuffer newBuffer = createByteBuffer(newCapacity);
+		buffer.flip();
+		newBuffer.put(buffer);
+		return newBuffer;
+	}
 
-            int lineStart = 0;
+	private static int getCP(String text, int to, int i, IntBuffer cpOut) {
+		char c1 = text.charAt(i);
+		if(Character.isHighSurrogate(c1) && i + 1 < to) {
+			char c2 = text.charAt(i + 1);
+			if(Character.isLowSurrogate(c2)) {
+				cpOut.put(0, Character.toCodePoint(c1, c2));
+				return 2;
+			}
+		}
+		cpOut.put(0, c1);
+		return 1;
+	}
 
-            float factorX = 1.0f / getContentScaleX();
-            float factorY = 1.0f / getContentScaleY();
+	public STBTTFontinfo getInfo() {
+		return info;
+	}
 
-            float lineY = 0.0f;
+	public float getContentScaleX() {
+		return contentScaleX;
+	}
 
-            int counter = 0;
+	public float getContentScaleY() {
+		return contentScaleY;
+	}
 
-            for (int i = 0, to = text.length(); i < to; ) {
-                i += getCP(text, to, i, pCodePoint);
+	public int getFontHeight() {
+		return fontHeight;
+	}
 
-                int cp = pCodePoint.get(0);
-                if (cp == '\n') {
-                    if (isLineBBEnabled()) {
-                        renderLineBB(text, lineStart, i - 1, y.get(0), scale);
-                    }
+	private boolean isLineBBEnabled() {
+		return lineBBEnabled;
+	}
 
-                    y.put(0, lineY = y.get(0) + (ascent - descent + lineGap) * scale);
-                    x.put(0, 0.0f);
+	private boolean isKerningEnabled() {
+		return kerningEnabled;
+	}
 
-                    lineStart = i;
-                    continue;
-                }
+	public Mesh getMeshFor(String text) {
+		List<Float> positions = new ArrayList<>();
+		List<Float> textureCoordinates = new ArrayList<>();
+		float[] normals = new float[0];
+		List<Integer> indices = new ArrayList<>();
 
-                float cpX = x.get(0);
-                stbtt_GetPackedQuad(myCharData, BITMAP_W, BITMAP_H, cp, x, y, q, true);
-                x.put(0, scale(cpX, x.get(0), factorX));
-                if (isKerningEnabled() && i < to) {
-                    getCP(text, to, i, pCodePoint);
-                    System.out.println(cp);
-                    System.out.println(pCodePoint.get(0));
-                    x.put(0, x.get(0) + stbtt_GetCodepointKernAdvance(info, cp, pCodePoint.get(0)) * scale);
-                }
+		try (MemoryStack stack = stackPush()) {
+			IntBuffer pCodePoint = stack.mallocInt(1);
 
-                float
-                        x0 = scale(cpX, q.x0(), factorX),
-                        x1 = scale(cpX, q.x1(), factorX),
-                        y0 = scale(lineY, q.y0(), factorY),
-                        y1 = scale(lineY, q.y1(), factorY);
+			FloatBuffer x = stack.floats(0.0f);
+			FloatBuffer y = stack.floats(0.0f);
 
-                positions.add(x0);
-                positions.add(y0);
-                positions.add(0f);
-                textureCoordinates.add(q.s0());
-                textureCoordinates.add(q.t0());
-                indices.add(counter*4);
+			STBTTAlignedQuad q = STBTTAlignedQuad.mallocStack(stack);
 
-                positions.add(x1);
-                positions.add(y0);
-                positions.add(0f);
-                textureCoordinates.add(q.s1());
-                textureCoordinates.add(q.t0());
-                indices.add(counter*4+1);
+			int lineStart = 0;
 
-                positions.add(x1);
-                positions.add(y1);
-                positions.add(0f);
-                textureCoordinates.add(q.s1());
-                textureCoordinates.add(q.t1());
-                indices.add(counter*4+2);
+			float factorX = 1.0f / getContentScaleX();
+			float factorY = 1.0f / getContentScaleY();
 
-                positions.add(x0);
-                positions.add(y1);
-                positions.add(0f);
-                textureCoordinates.add(q.s0());
-                textureCoordinates.add(q.t1());
-                indices.add(counter*4+3);
+			float lineY = 0.0f;
 
-                indices.add(counter*4);
-                indices.add(counter*4+2);
+			int counter = 0;
 
-                counter++;
-            }
-            if (isLineBBEnabled()) {
-                renderLineBB(text, lineStart, text.length(), lineY, scale);
-            }
-        }
+			for (int i = 0, to = text.length(); i < to; ) {
+				i += getCP(text, to, i, pCodePoint);
 
-        float[] pos = Utils.listToArray(positions);
-        float[] tex = Utils.listToArray(textureCoordinates);
-        int[] idx = indices.stream().mapToInt(i -> i).toArray();
+				int cp = pCodePoint.get(0);
+				if(cp == '\n') {
+					if(isLineBBEnabled()) {
+						renderLineBB(text, lineStart, i - 1, y.get(0), scale);
+					}
 
-        Mesh mesh = new Mesh(pos, tex, normals, idx);
-        mesh.setMaterial(new Material(bitmapTexture));
-        return mesh;
-    }
+					y.put(0, lineY = y.get(0) + (ascent - descent + lineGap) * scale);
+					x.put(0, 0.0f);
 
-    public static ByteBuffer ioResourceToByteBuffer(String resource) throws IOException {
-        ByteBuffer buffer;
+					lineStart = i;
+					continue;
+				}
 
-        Path path = Paths.get(resource);
-        if (Files.isReadable(path)) {
-            try (SeekableByteChannel fc = Files.newByteChannel(path)) {
-                buffer = createByteBuffer((int)fc.size() + 1);
-                while (fc.read(buffer) != -1);
-            }
-        } else {
-            try (
-                    InputStream source = TrueType.class.getClassLoader().getResourceAsStream(resource);
-                    ReadableByteChannel rbc = Channels.newChannel(source)
-            ) {
-                buffer = createByteBuffer(1024);
+				float cpX = x.get(0);
+				stbtt_GetPackedQuad(myCharData, BITMAP_W, BITMAP_H, cp, x, y, q, true);
+				x.put(0, scale(cpX, x.get(0), factorX));
+				if(isKerningEnabled() && i < to) {
+					getCP(text, to, i, pCodePoint);
+					System.out.println(cp);
+					System.out.println(pCodePoint.get(0));
+					x.put(0, x.get(0) + stbtt_GetCodepointKernAdvance(info, cp, pCodePoint.get(0)) * scale);
+				}
 
-                while (true) {
-                    int bytes = rbc.read(buffer);
-                    if (bytes == -1) {
-                        break;
-                    }
-                    if (buffer.remaining() == 0) {
-                        buffer = resizeBuffer(buffer, buffer.capacity() * 3 / 2); // 50%
-                    }
-                }
-            }
-        }
+				float x0 = scale(cpX, q.x0(), factorX), x1 = scale(cpX, q.x1(), factorX), y0 = scale(lineY, q.y0(), factorY), y1 = scale(lineY, q.y1(), factorY);
 
-        buffer.flip();
-        return memSlice(buffer);
-    }
+				positions.add(x0);
+				positions.add(y0);
+				positions.add(0f);
+				textureCoordinates.add(q.s0());
+				textureCoordinates.add(q.t0());
+				indices.add(counter * 4);
 
-    private static ByteBuffer resizeBuffer(ByteBuffer buffer, int newCapacity) {
-        ByteBuffer newBuffer = createByteBuffer(newCapacity);
-        buffer.flip();
-        newBuffer.put(buffer);
-        return newBuffer;
-    }
+				positions.add(x1);
+				positions.add(y0);
+				positions.add(0f);
+				textureCoordinates.add(q.s1());
+				textureCoordinates.add(q.t0());
+				indices.add(counter * 4 + 1);
 
-    private float scale(float center, float offset, float factor) {
-        return (offset - center) * factor + center;
-    }
+				positions.add(x1);
+				positions.add(y1);
+				positions.add(0f);
+				textureCoordinates.add(q.s1());
+				textureCoordinates.add(q.t1());
+				indices.add(counter * 4 + 2);
 
-    private void renderLineBB(String text, int from, int to, float y, float scale) {//todo: old opengl
-        glDisable(GL_TEXTURE_2D);
-        glPolygonMode(GL_FRONT, GL_LINE);
-        glColor3f(1.0f, 1.0f, 0.0f);
+				positions.add(x0);
+				positions.add(y1);
+				positions.add(0f);
+				textureCoordinates.add(q.s0());
+				textureCoordinates.add(q.t1());
+				indices.add(counter * 4 + 3);
 
-        float width = getStringWidth(info, text, from, to, getFontHeight());
-        y -= descent * scale;
+				indices.add(counter * 4);
+				indices.add(counter * 4 + 2);
 
-        glBegin(GL_QUADS);
-        glVertex2f(0.0f, y);
-        glVertex2f(width, y);
-        glVertex2f(width, y - getFontHeight());
-        glVertex2f(0.0f, y - getFontHeight());
-        glEnd();
+				counter++;
+			}
+			if(isLineBBEnabled()) {
+				renderLineBB(text, lineStart, text.length(), lineY, scale);
+			}
+		}
 
-        glEnable(GL_TEXTURE_2D);
-        glPolygonMode(GL_FRONT, GL_FILL);
-        glColor3f(169f / 255f, 183f / 255f, 198f / 255f); // Text color
-    }
+		float[] pos = Utils.listToArray(positions);
+		float[] tex = Utils.listToArray(textureCoordinates);
+		int[] idx = indices.stream().mapToInt(i -> i).toArray();
 
-    private float getStringWidth(STBTTFontinfo info, String text, int from, int to, int fontHeight) {
-        int width = 0;
+		return new Mesh(pos, tex, normals, idx);
+	}
 
-        try (MemoryStack stack = stackPush()) {
-            IntBuffer pCodePoint       = stack.mallocInt(1);
-            IntBuffer pAdvancedWidth   = stack.mallocInt(1);
-            IntBuffer pLeftSideBearing = stack.mallocInt(1);
+	private float scale(float center, float offset, float factor) {
+		return (offset - center) * factor + center;
+	}
 
-            int i = from;
-            while (i < to) {
-                i += getCP(text, to, i, pCodePoint);
-                int cp = pCodePoint.get(0);
+	private void renderLineBB(String text, int from, int to, float y, float scale) {//todo: old opengl
+		glDisable(GL_TEXTURE_2D);
+		glPolygonMode(GL_FRONT, GL_LINE);
+		glColor3f(1.0f, 1.0f, 0.0f);
 
-                stbtt_GetCodepointHMetrics(info, cp, pAdvancedWidth, pLeftSideBearing);
-                width += pAdvancedWidth.get(0);
+		float width = getStringWidth(info, text, from, to, getFontHeight());
+		y -= descent * scale;
 
-                if (isKerningEnabled() && i < to) {
-                    getCP(text, to, i, pCodePoint);
-                    width += stbtt_GetCodepointKernAdvance(info, cp, pCodePoint.get(0));
-                }
-            }
-        }
+		glBegin(GL_QUADS);
+		glVertex2f(0.0f, y);
+		glVertex2f(width, y);
+		glVertex2f(width, y - getFontHeight());
+		glVertex2f(0.0f, y - getFontHeight());
+		glEnd();
 
-        return width * stbtt_ScaleForPixelHeight(info, fontHeight);
-    }
+		glEnable(GL_TEXTURE_2D);
+		glPolygonMode(GL_FRONT, GL_FILL);
+		glColor3f(169f / 255f, 183f / 255f, 198f / 255f); // Text color
+	}
 
-    private static int getCP(String text, int to, int i, IntBuffer cpOut) {
-        char c1 = text.charAt(i);
-        if (Character.isHighSurrogate(c1) && i + 1 < to) {
-            char c2 = text.charAt(i + 1);
-            if (Character.isLowSurrogate(c2)) {
-                cpOut.put(0, Character.toCodePoint(c1, c2));
-                return 2;
-            }
-        }
-        cpOut.put(0, c1);
-        return 1;
-    }
+	private float getStringWidth(STBTTFontinfo info, String text, int from, int to, int fontHeight) {
+		int width = 0;
 
-    public int getBitMapW() {
-        return BITMAP_W;
-    }
+		try (MemoryStack stack = stackPush()) {
+			IntBuffer pCodePoint = stack.mallocInt(1);
+			IntBuffer pAdvancedWidth = stack.mallocInt(1);
+			IntBuffer pLeftSideBearing = stack.mallocInt(1);
 
-    public int getBitMapH() {
-        return BITMAP_H;
-    }
+			int i = from;
+			while (i < to) {
+				i += getCP(text, to, i, pCodePoint);
+				int cp = pCodePoint.get(0);
 
-    public Texture getBitMapTexture() {
-        return bitmapTexture;
-    }
+				stbtt_GetCodepointHMetrics(info, cp, pAdvancedWidth, pLeftSideBearing);
+				width += pAdvancedWidth.get(0);
+
+				if(isKerningEnabled() && i < to) {
+					getCP(text, to, i, pCodePoint);
+					width += stbtt_GetCodepointKernAdvance(info, cp, pCodePoint.get(0));
+				}
+			}
+		}
+
+		return width * stbtt_ScaleForPixelHeight(info, fontHeight);
+	}
+
+	public int getBitMapW() {
+		return BITMAP_W;
+	}
+
+	public int getBitMapH() {
+		return BITMAP_H;
+	}
+
+	public Texture getBitMapTexture() {
+		return bitmapTexture;
+	}
 }

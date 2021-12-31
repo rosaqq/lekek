@@ -10,6 +10,6 @@ public class SkyBox extends Phantom {
     public SkyBox(String objModel, String textureFile) throws Exception {
         super(OBJLoader.loadMesh(objModel));
         Texture skyBoxTexture = new Texture(textureFile);
-        mesh.setMaterial(new Material(skyBoxTexture, 0));
+        super.setMaterial(new Material(skyBoxTexture, 0));
     }
 }
