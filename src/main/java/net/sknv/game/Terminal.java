@@ -1,15 +1,16 @@
 package net.sknv.game;
 
+import java.util.Optional;
 import java.util.Scanner;
 
 public class Terminal extends Thread {
 
-    private String input = null;
+    private Optional<String> input = Optional.empty();
 
     public Terminal(){}
 
     private synchronized void setInput(String input){
-        this.input = input;
+        this.input = Optional.of(input);
     }
 
     public void run(){
@@ -22,13 +23,7 @@ public class Terminal extends Thread {
         }
     }
 
-    public synchronized String getInput(){
-        if (input == null){
-            return null;
-        } else {
-            String temp = input;
-            input = null;
-            return temp;
-        }
+    public synchronized Optional<String> getInput(){
+        return input;
     }
 }

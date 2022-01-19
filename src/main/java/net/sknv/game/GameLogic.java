@@ -232,9 +232,9 @@ public class GameLogic {
 		window.setKeyCallback((windowHandle, key, scancode, action, mods) -> {
 			if(usingTerminal && (action == GLFW_PRESS || action == GLFW_REPEAT)) { //using hud terminal
 				if(key >= 48 && key <= 90) {
-					hud.getTerminal().addText(String.valueOf((char) Character.toLowerCase(key)));
-				} else if(key == 32) hud.getTerminal().addText(" ");
-				else if(key == 257) processTerminal(hud.getTerminal().enter());
+					hud.getTerminal().addTerminalText(String.valueOf((char) Character.toLowerCase(key)));
+				} else if(key == 32) hud.getTerminal().addTerminalText(" ");
+				else if(key == 257) hud.getTerminal().enter().ifPresent(this::processTerminal);
 				else if(key == 259) hud.getTerminal().backspace();
 				else if(key == 265) hud.getTerminal().previous();
 				else if(key == 264) hud.getTerminal().recent();

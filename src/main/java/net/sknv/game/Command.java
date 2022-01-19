@@ -1,7 +1,6 @@
 package net.sknv.game;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.regex.Pattern;
 
 public enum Command {
     SAVESCENE{
@@ -9,8 +8,8 @@ public enum Command {
         public String getCommandName() { return "savescene"; }
 
         @Override
-        public Optional<List<List<Object>>> getSyntax() {
-            return Optional.of(List.of(List.of("sceneName")));
+        public Pattern getSyntax() {
+            return Pattern.compile("savescene (?<sceneName>\\w+)");
         }
     },
     LOADSCENE {
@@ -20,8 +19,8 @@ public enum Command {
         }
 
         @Override
-        public Optional<List<List<Object>>> getSyntax() {
-            return Optional.of(List.of(List.of("sceneName")));
+        public Pattern getSyntax() {
+            return Pattern.compile("loadscene (?<sceneName>\\w+)");
         }
     },
     CLEARITEMS {
@@ -31,8 +30,8 @@ public enum Command {
         }
 
         @Override
-        public Optional<List<List<Object>>> getSyntax() {
-            return Optional.empty();
+        public Pattern getSyntax() {
+            return Pattern.compile("clearitems");
         }
     },
     REMOVEITEM {
@@ -42,11 +41,8 @@ public enum Command {
         }
 
         @Override
-        public Optional<List<List<Object>>> getSyntax() {
-            return Optional.of(List.of(
-                    List.of(Optional.of("objectId")),
-                    List.of())
-            );
+        public Pattern getSyntax() {
+            return Pattern.compile("removeitem( (?<itemId>\\w+))?");
         }
     },
     ROTATEITEM {
@@ -56,8 +52,8 @@ public enum Command {
         }
 
         @Override
-        public Optional<List<List<Object>>> getSyntax() {
-            return Optional.of(List.of(List.of("rotX", "rotY", "rotZ")));
+        public Pattern getSyntax() {
+            return Pattern.compile("rotate item (?<rotX>\\d+) (?<rotY>\\d+) (?<rotZ>\\d+)");
         }
     },
     ADDITEM {
@@ -67,8 +63,8 @@ public enum Command {
         }
 
         @Override
-        public Optional<List<List<Object>>> getSyntax() {
-            return Optional.of(List.of(List.of("meshName")));
+        public Pattern getSyntax() {
+            return Pattern.compile("additem (?<meshFileName>\\w+)");
         }
     },
     ADDCUBES {
@@ -78,8 +74,8 @@ public enum Command {
         }
 
         @Override
-        public Optional<List<List<Object>>> getSyntax() {
-            return Optional.of(List.of(List.of("numberOfCubes")));
+        public Pattern getSyntax() {
+            return Pattern.compile("addcubes (?<numberOfCubes>\\d+)");
         }
     },
     HELP {
@@ -89,8 +85,8 @@ public enum Command {
         }
 
         @Override
-        public Optional<List<List<Object>>> getSyntax() {
-            return Optional.empty();
+        public Pattern getSyntax() {
+            return Pattern.compile("help");
         }
     };
 
@@ -98,7 +94,7 @@ public enum Command {
 
     public abstract String getCommandName();
 
-    public abstract Optional<List<List<Object>>> getSyntax();
+    public abstract Pattern getSyntax();
 
     public String[] getArguments() {
         return arguments;

@@ -14,14 +14,14 @@ public class HudTerminal {
 	private final List<IRenderable> elements;
 	private final TextItem terminalText;
 	private final TextItem consoleText;
-	private final Optional<String> suggestion;
+	private final Optional<String> autoCompletion;
 	private final LinkedList<String> history = new LinkedList();
 	private int historyIndex = -1;
 
 	public HudTerminal(TrueType font) {
 		this.terminalText = new TextItem(font, Optional.of("/"), TERMINAL_COLOR);
 		this.consoleText = new TextItem(font, Optional.empty(), CONSOLE_COLOR);
-		this.suggestion = Optional.empty();
+		this.autoCompletion = Optional.empty();
 		this.elements = new ArrayList<IRenderable>(List.of(terminalText, consoleText));
 	}
 
@@ -29,7 +29,7 @@ public class HudTerminal {
 		return terminalText;
 	}
 
-	public void setTerminal(String text) {
+	public void setTerminalText(String text) {
 		terminalText.setText(text);
 	}
 
@@ -37,29 +37,38 @@ public class HudTerminal {
 		return consoleText;
 	}
 
-	public String getTerminalText() {
-		return terminalText.getText().orElse("");
+	public Optional<String> getTerminalText() {
+		return terminalText.getText();
 	}
 
-	public void addText(String toAdd) {
-		setTerminal(getTerminalText().concat(toAdd));
-		suggestCompletion();
+	public void addTerminalText(String toAdd) {
+		getTerminalText().ifPresentOrElse(
+				terminalText -> setTerminalText(terminalText.concat(toAdd)),
+				() -> setTerminalText(toAdd)
+		);
 	}
 
 	public void backspace() {
-		if(getTerminalText().length() > 1) {
-			setTerminal(getTerminalText().substring(0, getTerminalText().length() - 1));
-			suggestCompletion();
-		}
+		getTerminalText().ifPresent(
+				terminalText -> {
+					if(terminalText.length()>1){
+						setTerminalText(terminalText.substring(0,terminalText.length()-1));
+					}
+				}
+		);
 	}
 
-	public String enter() {
-		history.push(getTerminalText());
+	public Optional<String> enter() {
+		if(!getTerminalText().isPresent() || getTerminalText().get().equals("/")){
+			return Optional.empty();
+		}
+
+		String enter = getTerminalText().get();
+		history.push(enter);
 		historyIndex = -1;
 
-		String enter = getTerminalText().substring(1);
-		setTerminal("/");
-		return enter;
+		setTerminalText("/");
+		return Optional.of(enter.substring(1));
 	}
 
 	public void open() {
@@ -69,21 +78,21 @@ public class HudTerminal {
 	public void previous() {
 		if(history.size() > 0) {
 			if(++historyIndex > history.size() - 1) historyIndex = history.size() - 1;
-			setTerminal(history.get(historyIndex));
+			setTerminalText(history.get(historyIndex));
 		}
 	}
 
 	public void recent() {
 		if(history.size() > 0) {
 			if(--historyIndex < 0) historyIndex = 0;
-			setTerminal(history.get(historyIndex));
+			setTerminalText(history.get(historyIndex));
 		}
 	}
 
 	public void suggestCompletion() {
-		if(!getTerminalText().isEmpty() && !getTerminalText().equals("/") && !getTerminalText().endsWith(" ")) {
+		if(getTerminalText().isPresent() && !getTerminalText().get().equals("/") && !getTerminalText().get().endsWith(" ")) {
 
-			String[] parsed = getTerminalText().substring(1).split(" ");
+			String[] parsed = getTerminalText().get().substring(1).split(" ");
 			if(parsed.length == 0) return;
 
 			String toMatch = parsed[parsed.length - 1];

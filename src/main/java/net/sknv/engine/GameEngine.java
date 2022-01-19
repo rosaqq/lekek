@@ -95,7 +95,7 @@ public class GameEngine implements Runnable {
 	protected void input() {
 		mouseInput.input(window);
 		gameLogic.input(window, mouseInput);
-		gameLogic.processTerminal(terminal.getInput());
+		terminal.getInput().ifPresent(gameLogic::processTerminal);
 	}
 
 	protected void update(float interval) {
