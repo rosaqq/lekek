@@ -1,12 +1,9 @@
 package net.sknv.game;
 
-import net.sknv.engine.IHud;
 import net.sknv.engine.Window;
 import net.sknv.engine.entities.HudElement;
 import net.sknv.engine.entities.TextItem;
-import net.sknv.engine.graph.Material;
-import net.sknv.engine.graph.Mesh;
-import net.sknv.engine.graph.OBJLoader;
+import net.sknv.engine.graph.*;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
@@ -14,33 +11,31 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class Hud implements IHud {
+public class Hud {
 
-    private final ArrayList<HudElement> hudElements;
+	private static final WebColor CROSS_HAIR_COLOR = WebColor.White;
+	private final ArrayList<IRenderable> hudElements;
+	private final TextItem crossHair;
+	private final HudElement compassItem;
 
-    private final TextItem myStatusTextItem;
+	private final HudTerminal terminal;
 
-    private final HudElement compassItem;
+	public Hud(TrueType font) throws Exception {
 
-    private final HudTerminal terminal;
+		this.crossHair = new TextItem(font, Optional.of("+"), CROSS_HAIR_COLOR);
 
-    public Hud(TrueType font) throws Exception {
+		this.terminal = new HudTerminal(font);
 
-        this.myStatusTextItem = new TextItem(font, Optional.of("+"));
+		// Create compass
+		Mesh mesh = OBJLoader.loadMesh("/models/compass.obj");
+		Material material = new Material();
+		material.setAmbientColor(new Vector4f(1, 0, 0, 1));
+		compassItem = new HudElement(mesh, material);
+		compassItem.setScale(40.0f);
+		// Rotate to transform it to screen coordinates
+		compassItem.setRotationEuclidean(new Vector3f(0f, 0f, (float) Math.PI));
 
-        this.terminal = new HudTerminal(font);
-
-        // Create compass
-        Mesh mesh = OBJLoader.loadMesh("/models/compass.obj");
-        Material material = new Material();
-        material.setAmbientColor(new Vector4f(1, 0, 0, 1));
-        mesh.setMaterial(material);
-        compassItem = new HudElement(mesh);
-        compassItem.setScale(40.0f);
-        // Rotate to transform it to screen coordinates
-        compassItem.setRotationEuclidean(new Vector3f(0f, 0f, (float)Math.PI));
-
-        //bitmap texture
+		//bitmap texture
 //        int BITMAP_W = font.getBitMapW();
 //        int BITMAP_H = font.getBitMapH();
 //
@@ -49,48 +44,51 @@ public class Hud implements IHud {
 //        myMesh.setMaterial(new Material(font.getBitMapTexture()));
 //        HudElement bitmap = new HudElement(myMesh);
 
-        // Create list that holds the items that compose the HUD
-        hudElements = new ArrayList<>(List.of(myStatusTextItem, compassItem));
-    }
+		// Create list that holds the items that compose the HUD
+		hudElements = new ArrayList<IRenderable>(List.of(crossHair, compassItem));
+	}
 
-    public void setStatusText(String statusText) {
-        this.myStatusTextItem.setText(statusText);
-    }
+	public void setStatusText(String statusText) {
+		this.crossHair.setText(statusText);
+	}
 
-    public void rotateCompass(float angle) {
-        this.compassItem.setRotationEuclidean(new Vector3f(0, 0, (float) Math.PI + angle));
-    }
+	public void rotateCompass(float angle) {
+		this.compassItem.setRotationEuclidean(new Vector3f(0, 0, (float) Math.PI + angle));
+	}
 
-    @Override
-    public ArrayList<HudElement> getHudElements() {
-        return hudElements;
-    }
+	public ArrayList<IRenderable> getHudElements() {
+		return hudElements;
+	}
 
-    public void updateSize(Window window) {//todo: make this not run every update
-        Vector3f dif = myStatusTextItem.getMesh().getMax().sub(myStatusTextItem.getMesh().getMin(), new Vector3f()).div(2f);
-        myStatusTextItem.setPosition(window.getCenter().x - dif.x, window.getCenter().y + dif.y - myStatusTextItem.getMesh().getMax().y, 0);
+	public void updateSize(Window window) {//todo: make this not run every update
+		Vector3f dif = crossHair.getMesh().getMax().sub(crossHair.getMesh().getMin(), new Vector3f()).div(2f);
+		crossHair.setPosition(window.getCenter().x - dif.x, window.getCenter().y + dif.y - crossHair.getMesh().getMax().y, 0);
 
-        Vector3f consoleSize = terminal.getConsoleText().getMesh().getMax().sub(terminal.getConsoleText().getMesh().getMin(), new Vector3f());
+		Vector3f consoleSize = terminal.getConsoleText().getMesh().getMax().sub(terminal.getConsoleText().getMesh().getMin(), new Vector3f());
 
-        compassItem.setPosition(window.getWidth() - 40f, 50f, 0f);
-        terminal.getTextItem().setPosition(0f, window.getHeight() - 5f, 0f);
-        terminal.getConsoleText().setPosition(0f,terminal.getTextItem().getPosition().y - consoleSize.y - 5f,0f);
-    }
+		compassItem.setPosition(window.getWidth() - 40f, 50f, 0f);
+		terminal.getTextItem().setPosition(0f, window.getHeight() - 5f, 0f);
+		terminal.getConsoleText().setPosition(0f, terminal.getTextItem().getPosition().y - consoleSize.y - 5f, 0f);
+	}
 
-    public HudTerminal getTerminal() {
-        return terminal;
-    }
+	public HudTerminal getTerminal() {
+		return terminal;
+	}
 
-    public void showTerminal() {
-        terminal.open();
-        hudElements.addAll(terminal.getElements());
-    }
+	public void showTerminal() {
+		terminal.open();
+		hudElements.addAll(terminal.getElements());
+	}
 
-    public void hideTerminal() {
-        hudElements.removeAll(terminal.getElements());
-    }
+	public void hideTerminal() {
+		hudElements.removeAll(terminal.getElements());
+	}
 
-    public void addElement(HudElement myElement) {
-        hudElements.add(myElement);
-    }
+	public void addElement(HudElement myElement) {
+		hudElements.add(myElement);
+	}
+
+	public void cleanup() {
+		for (IRenderable element : getHudElements()) element.cleanup();
+	}
 }

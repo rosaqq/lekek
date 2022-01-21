@@ -1,7 +1,6 @@
 package net.sknv.game;
 
 import net.sknv.engine.GameEngine;
-import net.sknv.engine.IGameLogic;
 
 public class Main {
 
@@ -11,7 +10,7 @@ public class Main {
             terminal.setDaemon(true);
 
             boolean vsync = true;
-            IGameLogic gameLogic = new UltimateKekGame();
+            GameLogic gameLogic = new GameLogic();
             GameEngine gameEngine = new GameEngine("Ultimate Kek Game", 600, 480, vsync, gameLogic, terminal);
 
             terminal.start();

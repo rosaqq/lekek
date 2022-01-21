@@ -1,20 +1,14 @@
 package net.sknv.engine.entities;
 
+import net.sknv.engine.graph.Material;
 import net.sknv.engine.graph.Mesh;
-import net.sknv.engine.graph.MeshUtils;
-import net.sknv.engine.graph.ShaderProgram;
-import net.sknv.engine.graph.WebColor;
 import net.sknv.engine.physics.colliders.BoundingBox;
 import net.sknv.engine.physics.colliders.OBB;
 import org.joml.Matrix3f;
-import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.io.ObjectInputStream;
-
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL30.glBindVertexArray;
 
 public class Collider extends Phantom {
 
@@ -35,12 +29,14 @@ public class Collider extends Phantom {
     protected Vector3f velocity;
 
     //other
-    private WebColor showBB = null;
     protected transient BoundingBox boundingBox;
     protected boolean isStatic;
 
-    public Collider(Mesh mesh) {
-        super(mesh);
+    public Collider(Mesh mesh, Material material) {
+        super(mesh, material);
+
+        Object a = new Object();
+
         boundingBox = new OBB(this);
         isStatic = false;
         mass = 1;
@@ -114,34 +110,6 @@ public class Collider extends Phantom {
 
     public float getMass() {
         return mass;
-    }
-
-    @Override
-    public void render(ShaderProgram shaderProgram, Matrix4f viewMatrix) {
-        super.render(shaderProgram, viewMatrix);
-        if (showBB!=null) {
-            Mesh aabbMesh = MeshUtils.generateAABB(showBB, boundingBox);
-            Mesh obbMesh = MeshUtils.generateOBB(showBB, boundingBox);
-
-            shaderProgram.setUniform("modelViewMatrix", viewMatrix);
-
-            //draw meshes
-            shaderProgram.setUniform("material", aabbMesh.getMaterial());
-            glBindVertexArray(aabbMesh.getVaoId());
-            glDrawElements(GL_LINES, aabbMesh.getVertexCount(), GL_UNSIGNED_INT, 0);
-
-            shaderProgram.setUniform("material", obbMesh.getMaterial());
-            glBindVertexArray(obbMesh.getVaoId());
-            glDrawElements(GL_LINES, obbMesh.getVertexCount(), GL_UNSIGNED_INT, 0);
-
-            //restore state
-            glBindVertexArray(0);
-            glBindTexture(GL_TEXTURE_2D, 0);
-            showBB = null;
-        }
-    }
-    public void drawBB(WebColor color) {
-        this.showBB = color;
     }
 
     @Override

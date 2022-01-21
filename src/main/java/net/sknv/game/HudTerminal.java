@@ -1,109 +1,119 @@
 package net.sknv.game;
 
-import net.sknv.engine.entities.HudElement;
 import net.sknv.engine.entities.TextItem;
+import net.sknv.engine.graph.IRenderable;
+import net.sknv.engine.graph.WebColor;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class HudTerminal {
 
-    private List<HudElement> elements;
-    private TextItem terminalText;
-    private TextItem consoleText;
-    private Optional<String> suggestion;
-    private LinkedList<String> history = new LinkedList();
-    private int historyIndex = -1;
+	private final WebColor CONSOLE_COLOR = WebColor.White;
+	private final WebColor TERMINAL_COLOR = WebColor.White;
+	private final List<IRenderable> elements;
+	private final TextItem terminalText;
+	private final TextItem consoleText;
+	private final LinkedList<String> history = new LinkedList();
+	private int historyIndex = -1;
 
-    public HudTerminal(TrueType font) {
-        this.terminalText = new TextItem(font, Optional.of("/"));
-        this.consoleText = new TextItem(font, Optional.empty());
-        this.suggestion = Optional.empty();
-        this.elements = new ArrayList<>(List.of(terminalText,consoleText));
-    }
+	public HudTerminal(TrueType font) {
+		this.terminalText = new TextItem(font, Optional.of("/"), TERMINAL_COLOR);
+		this.consoleText = new TextItem(font, Optional.empty(), CONSOLE_COLOR);
+		this.elements = new ArrayList<>(List.of(terminalText, consoleText));
+	}
 
-    public TextItem getTextItem() {
-        return terminalText;
-    }
+	public TextItem getTextItem() {
+		return terminalText;
+	}
 
-    public void setTerminal(String text){
-        terminalText.setText(text);
-    }
+	public void setTerminalText(String text) {
+		terminalText.setText(text);
+	}
 
-    public TextItem getConsoleText() {
-        return consoleText;
-    }
+	public TextItem getConsoleText() {
+		return consoleText;
+	}
 
-    public String getTerminalText() {
-        return terminalText.getText().orElse("");
-    }
+	public Optional<String> getTerminalText() {
+		return terminalText.getText();
+	}
 
-    public void addText(String toAdd) {
-        setTerminal(getTerminalText().concat(toAdd));
-        suggestCompletion();
-    }
+	public void addTerminalText(String toAdd) {
+		getTerminalText().ifPresentOrElse(
+				terminalText -> setTerminalText(terminalText.concat(toAdd)),
+				() -> setTerminalText(toAdd)
+		);
+	}
 
-    public void backspace() {
-        if(getTerminalText().length()>1){
-            setTerminal(getTerminalText().substring(0, getTerminalText().length()-1));
-            suggestCompletion();
-        }
-    }
+	public void backspace() {
+		getTerminalText().ifPresent(
+				terminalText -> {
+					if(terminalText.length()>1){
+						setTerminalText(terminalText.substring(0,terminalText.length()-1));
+					}
+				}
+		);
+	}
 
-    public String enter() {
-        history.push(getTerminalText());
-        historyIndex = -1;
+	public Optional<String> enter() {
+		if(!getTerminalText().isPresent() || getTerminalText().get().equals("/")){
+			return Optional.empty();
+		}
 
-        String enter = getTerminalText().substring(1);
-        setTerminal("/");
-        return enter;
-    }
+		String enter = getTerminalText().get();
+		history.push(enter);
+		historyIndex = -1;
 
-    public void open() {
-        suggestCompletion();
-    }
+		setTerminalText("/");
+		return Optional.of(enter.substring(1));
+	}
 
-    public void previous() {
-        if(history.size()>0){
-            if(++historyIndex>history.size()-1) historyIndex=history.size()-1;
-            setTerminal(history.get(historyIndex));
-        }
-    }
+	public void open() {
+		suggestCompletion();
+	}
 
-    public void recent() {
-        if(history.size()>0){
-            if(--historyIndex<0) historyIndex=0;
-            setTerminal(history.get(historyIndex));
-        }
-    }
+	public void previous() {
+		if(history.size() > 0) {
+			if(++historyIndex > history.size() - 1) historyIndex = history.size() - 1;
+			setTerminalText(history.get(historyIndex));
+		}
+	}
 
-    public void suggestCompletion(){
-        if(!getTerminalText().isEmpty() && !getTerminalText().equals("/") && !getTerminalText().endsWith(" ")){
+	public void recent() {
+		if(history.size() > 0) {
+			if(--historyIndex < 0) historyIndex = 0;
+			setTerminalText(history.get(historyIndex));
+		}
+	}
 
-            String[] parsed = getTerminalText().substring(1).split(" ");
-            if(parsed.length==0) return;
+	public void suggestCompletion() {
+		if(getTerminalText().isPresent() && !getTerminalText().get().equals("/") && !getTerminalText().get().endsWith(" ")) {
 
-            String toMatch = parsed[parsed.length-1];
-            System.out.println("expression to match ->" + toMatch);
+			String[] parsed = getTerminalText().get().substring(1).split(" ");
+			if(parsed.length == 0) return;
 
-            List<String> matches = Arrays.stream(Command.values())
-                    .filter(c -> c.getCommandName().startsWith(toMatch))
-                    .map(c -> c.getCommandName().replaceFirst(toMatch, ""))
-                    .collect(Collectors.toList());
+			String toMatch = parsed[parsed.length - 1];
+			System.out.println("expression to match ->" + toMatch);
 
-            System.out.println("suggestions ->" + matches);
-        }
-    }
+			List<String> matches = Arrays.stream(Command.values())
+					.filter(c -> c.getCommandName().startsWith(toMatch))
+					.map(c -> c.getCommandName().replaceFirst(toMatch, ""))
+					.collect(Collectors.toList());
 
-    public void setConsole(String text) {
-        consoleText.setText(text);
-    }
+			System.out.println("suggestions ->" + matches);
+		}
+	}
 
-    public Collection<? extends HudElement> getElements() {
-        return elements;
-    }
+	public void setConsole(String text) {
+		consoleText.setText(text);
+	}
 
-    public void addConsoleText(String text) {
-        consoleText.addText(text);
-    }
+	public Collection<IRenderable> getElements() {
+		return elements;
+	}
+
+	public void addConsoleText(String text) {
+		consoleText.addText(text);
+	}
 }
