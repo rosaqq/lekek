@@ -14,15 +14,13 @@ public class HudTerminal {
 	private final List<IRenderable> elements;
 	private final TextItem terminalText;
 	private final TextItem consoleText;
-	private final Optional<String> autoCompletion;
 	private final LinkedList<String> history = new LinkedList();
 	private int historyIndex = -1;
 
 	public HudTerminal(TrueType font) {
 		this.terminalText = new TextItem(font, Optional.of("/"), TERMINAL_COLOR);
 		this.consoleText = new TextItem(font, Optional.empty(), CONSOLE_COLOR);
-		this.autoCompletion = Optional.empty();
-		this.elements = new ArrayList<IRenderable>(List.of(terminalText, consoleText));
+		this.elements = new ArrayList<>(List.of(terminalText, consoleText));
 	}
 
 	public TextItem getTextItem() {
